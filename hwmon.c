@@ -116,6 +116,56 @@ static const struct metric_data metrics[] = {
   { .prefix = 0 },
 };
 
+static void hwmon_name(const char *path, char *dst, size_t dst_len) {
+  char buf[BUF_SIZE];
+  FILE *f;
+  size_t len;
+
+  // if the path is a symlink to "../../devices/X/Y/...", use X/Y as the name,
+  // except if it is "virtual/hwmon"
+
+  len = readlink(path, buf, sizeof buf);
+  if (len > 14 && memcmp(buf, "../../devices/", 14) == 0) {
+    char *start = buf + 14;
+    char *end = strchr(start, '/');
+    if (end)
+      end = strchr(end + 1, '/');
+    if (end)
+      *end = '\0';
+    if (strcmp(start, "virtual/hwmon") != 0) {
+      snprintf(dst, dst_len, "%s", start);
+      return;
+    }
+  }
+
+  // try to use the 'name' file
+
+  snprintf(buf, sizeof buf, "%s/name", path);
+  f = fopen(buf, "r");
+  if (f) {
+    bool found = false;
+    if (fgets(buf, sizeof buf, f)) {
+      len = strlen(buf);
+      if (len > 0 && buf[len-1] == '\n') {
+        len--;
+        buf[len] = '\0';
+      }
+      if (len > 0) {
+        snprintf(dst, dst_len, "hwmon/%s", buf);
+        found = true;
+      }
+    }
+    fclose(f);
+    if (found)
+      return;
+  }
+
+  // give up, just call this unknown
+
+  // TODO: add an index
+  snprintf(dst, dst_len, "unknown");
+}
+
 static void hwmon_collect(scrape_req *req, void *ctx) {
   // buffers
 
@@ -130,7 +180,6 @@ static void hwmon_collect(scrape_req *req, void *ctx) {
 
   char path[BUF_SIZE];
   char buf[BUF_SIZE];
-  size_t len;
 
   FILE *f;
 
@@ -148,18 +197,7 @@ static void hwmon_collect(scrape_req *req, void *ctx) {
       continue;
     snprintf(path, sizeof path, "/sys/class/hwmon/%s", dent->d_name);
 
-    len = readlink(path, buf, sizeof buf);
-    if (len > 14 && memcmp(buf, "../../devices/", 14) == 0) {
-      char *start = buf + 14;
-      char *end = strchr(start, '/');
-      if (end)
-        end = strchr(end + 1, '/');
-      if (end)
-        *end = '\0';
-      snprintf(chip_label, sizeof chip_label, "%s", start);
-    } else {
-      snprintf(chip_label, sizeof chip_label, "unknown");
-    }
+    hwmon_name(path, chip_label, sizeof chip_label);
 
     DIR *dir = opendir(path);
     if (!dir)
