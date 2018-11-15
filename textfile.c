@@ -7,6 +7,9 @@
 #include "textfile.h"
 #include "util.h"
 
+// TODO: check default
+#define DEFAULT_DIR "/var/lib/prometheus-node-exporter"
+
 void *textfile_init(int argc, char *argv[]);
 void textfile_collect(scrape_req *req, void *ctx);
 
@@ -18,9 +21,18 @@ const struct collector textfile_collector = {
 };
 
 void *textfile_init(int argc, char *argv[]) {
-  const char *dir = "."; // TODO: default
-  // TODO: parse arg
-  return must_strdup(dir);
+  char *dir = DEFAULT_DIR;
+
+  for (int arg = 0; arg < argc; arg++) {
+    if (strncmp(argv[arg], "dir=", 4) == 0) {
+      dir = &argv[arg][4];
+    } else {
+      fprintf(stderr, "unknown argument for textfile collector: %s", argv[arg]);
+      return 0;
+    }
+  }
+
+  return dir;
 }
 
 void textfile_collect(scrape_req *req, void *ctx) {
