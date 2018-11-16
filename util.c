@@ -93,7 +93,13 @@ const char *cbuf_get(struct cbuf *buf, size_t *len) {
 }
 
 int cbuf_cmp(cbuf *buf, const char *other) {
-  return strncmp(buf->data, other, buf->len);
+  size_t other_len = strlen(other);
+  if (buf->len < other_len)
+    return -1;
+  else if (buf->len == other_len)
+    return memcmp(buf->data, other, buf->len);
+  else
+    return +1;
 }
 
 // string lists

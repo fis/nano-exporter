@@ -17,6 +17,7 @@ void cbuf_puts(cbuf *buf, const char *src);
 void cbuf_putc(cbuf *buf, int c);
 void cbuf_putf(cbuf *buf, const char *fmt, ...);
 const char *cbuf_get(struct cbuf *buf, size_t *len);
+/** Compares the contents of \p buf to the string in \p other, in shortlex order. */
 int cbuf_cmp(cbuf *buf, const char *other);
 
 // string lists
