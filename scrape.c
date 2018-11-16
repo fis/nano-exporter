@@ -1,9 +1,11 @@
 #define _POSIX_C_SOURCE 200809L
 
+#include <ctype.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <poll.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -21,6 +23,8 @@ struct scrape_req {
   int socket;
   cbuf *buf;
 };
+
+static bool handle_http(struct scrape_req *req);
 
 bool scrape_serve(const char *port, scrape_handler *handler, void *handler_ctx) {
   struct scrape_req req;
@@ -112,8 +116,8 @@ bool scrape_serve(const char *port, scrape_handler *handler, void *handler_ctx) 
         continue;
       }
 
-      // TODO: HTTP stuff
-      handler(&req, handler_ctx);
+      if (handle_http(&req))
+        handler(&req, handler_ctx);
       close(req.socket);
     }
   }
@@ -149,4 +153,104 @@ void scrape_write(scrape_req *req, const char *metric, const char *(*labels)[2],
 
 void scrape_write_raw(scrape_req *req, const void *buf, size_t len) {
   write_all(req->socket, buf, len);
+}
+
+static const char http_success[] =
+    "HTTP/1.1 200 OK\r\n"
+    "Server: prometheus-nano-exporter\r\n"
+    "Content-Type: text/plain; charset=UTF-8\r\n"
+    "Connection: close\r\n"
+    "\r\n"
+    ;
+static const char http_error[] =
+    "HTTP/1.1 400 Bad Request\r\n"
+    "Server: prometheus-nano-exporter\r\n"
+    "Content-Type: text/plain; charset=UTF-8\r\n"
+    "Connection: close\r\n"
+    "\r\n"
+    "This is not a general-purpose HTTP server.\r\n"
+    ;
+
+static bool handle_http(struct scrape_req *req) {
+  unsigned char http_buf[1024];
+  cbuf *tmp_buf = req->buf;
+
+  enum {
+    state_read_method,
+    state_read_path,
+    state_read_version,
+    state_skip_headers_1,
+    state_skip_headers_2
+  } state = state_read_method;
+  cbuf_reset(tmp_buf);
+
+  while (true) {
+    ssize_t got = read(req->socket, &http_buf, sizeof http_buf);
+    if (got <= 0)
+      return false;
+    for (ssize_t i = 0; i < got; i++) {
+      int c = http_buf[i];
+      if (c == '\r')
+        continue;
+
+      switch (state) {
+        case state_read_method:
+          if (c == ' ') {
+            if (cbuf_cmp(tmp_buf, "GET") != 0)
+              goto fail;
+            state = state_read_path;
+            cbuf_reset(tmp_buf);
+            break;
+          }
+          if (!isalnum(c) || cbuf_len(tmp_buf) >= 16)
+            goto fail;
+          cbuf_putc(tmp_buf, c);
+          break;
+
+        case state_read_path:
+          if (c == ' ') {
+            if (cbuf_cmp(tmp_buf, "/metrics") != 0)
+              goto fail;
+            state = state_read_version;
+            cbuf_reset(tmp_buf);
+            break;
+          }
+          if (!isprint(c) || c == '\n' || cbuf_len(tmp_buf) >= 128)
+            goto fail;
+          cbuf_putc(tmp_buf, c);
+          break;
+
+        case state_read_version:
+          if (c == '\n') {
+            if (cbuf_cmp(tmp_buf, "HTTP/1.1") != 0)
+              goto fail;
+            state = state_skip_headers_1;
+            cbuf_reset(tmp_buf);
+            break;
+          }
+          if (!isgraph(c) || cbuf_len(tmp_buf) >= 16)
+            goto fail;
+          cbuf_putc(tmp_buf, c);
+          break;
+
+        case state_skip_headers_1:
+          if (c == '\n')
+            goto succeed;
+          state = state_skip_headers_2;
+          break;
+        case state_skip_headers_2:
+          if (c == '\n')
+            state = state_skip_headers_1;
+          break;
+      }
+    }
+  }
+
+succeed:
+  write_all(req->socket, http_success, sizeof http_success - 1);
+  return true;
+
+fail:
+  write_all(req->socket, http_error, sizeof http_error - 1);
+  return false;
 }

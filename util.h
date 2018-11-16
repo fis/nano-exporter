@@ -11,11 +11,13 @@ typedef struct cbuf cbuf;
 
 cbuf *cbuf_alloc(size_t initial_size, size_t max_size);
 void cbuf_reset(cbuf *buf);
+size_t cbuf_len(cbuf *buf);
 void cbuf_put(cbuf *buf, const void *src, size_t len);
 void cbuf_puts(cbuf *buf, const char *src);
 void cbuf_putc(cbuf *buf, int c);
 void cbuf_putf(cbuf *buf, const char *fmt, ...);
 const char *cbuf_get(struct cbuf *buf, size_t *len);
+int cbuf_cmp(cbuf *buf, const char *other);
 
 // string lists
 

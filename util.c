@@ -48,6 +48,10 @@ void cbuf_reset(cbuf *buf) {
   buf->len = 0;
 }
 
+size_t cbuf_len(cbuf *buf) {
+  return buf->len;
+}
+
 void cbuf_put(cbuf *buf, const void *src, size_t len) {
   if (!cbuf_reserve(buf, len))
     return;
@@ -86,6 +90,10 @@ void cbuf_putf(cbuf *buf, const char *fmt, ...) {
 const char *cbuf_get(struct cbuf *buf, size_t *len) {
   *len = buf->len;
   return buf->data;
+}
+
+int cbuf_cmp(cbuf *buf, const char *other) {
+  return strncmp(buf->data, other, buf->len);
 }
 
 // string lists
