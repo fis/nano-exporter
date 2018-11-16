@@ -43,7 +43,7 @@ static void handler(scrape_req *req, void *ctx_ptr);
 
 int main(int argc, char *argv[]) {
   struct config cfg = {
-    .port = "29100",
+    .port = "9100",
   };
   struct handler_ctx ctx;
 
@@ -92,7 +92,11 @@ static bool parse_args(int argc, char *argv[], struct config *cfg, struct handle
 
     // parse any non-collector arguments
 
-    // TODO --help, --port=X
+    // TODO --help
+    if (strncmp(argv[arg], "--port=", 7) == 0) {
+      cfg->port = &argv[arg][7];
+      goto next_arg;
+    }
 
     fprintf(stderr, "unknown argument: %s\n", argv[arg]);
     return false;
