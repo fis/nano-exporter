@@ -83,7 +83,7 @@ bool scrape_serve(const char *port, scrape_handler *handler, void *handler_ctx) 
   }
 
   if (nfds == 0) {
-    fprintf(stderr, "failed to bind any sockets");
+    fprintf(stderr, "failed to bind any sockets\n");
     return false;
   }
 
