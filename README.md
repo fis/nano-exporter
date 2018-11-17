@@ -42,6 +42,7 @@ including generated metrics, labels and configuration options.
 | ---- | ----------- |
 | [`cpu`](#cpu) | CPU usage from `/proc/stat` and CPU frequency scaling data from sysfs. |
 | [`hwmon`](#hwmon) | Temperature, fan and voltage sensors from `/sys/class/hwmon`. |
+| [`meminfo`](#meminfo) | Memory usage statistics from `/proc/meminfo`. |
 | [`network`](#network) | Network device transmit/receive statistics from `/proc/net/dev`. |
 | [`textfile`](#textfile) | Custom metrics from `.prom` text files dropped in a directory. |
 | [`uname`](#uname) | Node information returned by the `uname` system call. |
@@ -105,6 +106,18 @@ chip.
 
 The values are by default directly as reported in sysfs: there's no
 built-in scaling. TODO: scaling options.
+
+### `meminfo`
+
+The `meminfo` collector exposes all the rows from `/proc/meminfo`
+under the metric name `node_memory_X`. The part *X* corresponds to the
+label in `/proc/meminfo`, with the exception that non-alphanumeric
+characters are replaced with `_`, and any remaining trailing `_`s are
+removed.
+
+If the line in `/proc/meminfo` has a `kB` suffix, the suffix `_bytes`
+is also appended to the metric name, and the value multiplied by 1024
+to convert it to bytes.
 
 ### `network`
 
