@@ -10,6 +10,9 @@
 // size of input buffer for paths and lines
 #define BUF_SIZE 256
 
+// assumed constant size of disk sector in /proc/diskstats
+#define SECTOR_SIZE 512
+
 static void *diskstats_init(int argc, char *argv[]);
 static void diskstats_collect(scrape_req *req, void *ctx);
 
@@ -51,20 +54,19 @@ static const struct {
 } columns[] = {
   { .metric = "node_disk_reads_completed_total", .factor = 1.0 },
   { .metric = "node_disk_reads_merged_total", .factor = 1.0 },
-  { .metric = "node_disk_read_bytes_total", .factor = 512.0 },  // TODO: always 512-byte sectors?
+  { .metric = "node_disk_read_bytes_total", .factor = SECTOR_SIZE },
   { .metric = "node_disk_read_time_seconds_total", .factor = 0.001 },
   { .metric = "node_disk_writes_completed_total", .factor = 1.0 },
   { .metric = "node_disk_writes_merged_total", .factor = 1.0 },
-  { .metric = "node_disk_written_bytes_total", .factor = 512.0 },  // TODO: constant?
-  { .metric = "node_disk_write_time_seconds_total", .factor = 0.001 },  // TODO: constant?
+  { .metric = "node_disk_written_bytes_total", .factor = SECTOR_SIZE },
+  { .metric = "node_disk_write_time_seconds_total", .factor = 0.001 },
   { .metric = "node_disk_io_now", .factor = 1.0 },
   { .metric = "node_disk_io_time_seconds_total", .factor = 0.001 },
   { .metric = "node_disk_io_time_weighted_seconds_total", .factor = 0.001 },
-  // TODO: metrics for 4.18+ discard fields
-  // - # of discards completed
-  // - # of discards merged
-  // - # of sectors discarded
-  // - # of milliseconds spent discarding
+  { .metric = "node_disk_discards_completed_total", .factor = 1.0 },
+  { .metric = "node_disk_discards_merged_total", .factor = 1.0 },
+  { .metric = "node_disk_discarded_sectors_total", .factor = 1.0 },
+  { .metric = "node_disk_discard_time_seconds_total", .factor = 0.001 },
 };
 #define NCOLUMNS (sizeof columns / sizeof *columns)
 

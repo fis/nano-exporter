@@ -110,6 +110,15 @@ The metrics correspond to the columns of `/proc/diskstats`:
 * `node_disk_io_time_seconds_total`: Total time spent in disk I/O.
 * `node_disk_io_time_weighted_seconds_total`: Time spent in disk I/O
   weighted by the number of pending operations.
+* `node_disk_discards_completed_total`: Total number of discard
+  operations completed successfully.
+* `node_disk_discards_merged_total`: Total number of adjacent discard
+  operations merged.
+* `node_disk_discarded_sectors_total`: Total number of discarded
+  sectors. Note that this is in sectors, not bytes, unlike the
+  corresponding read/write metrics.
+* `node_disk_discard_time_seconds_total`: Total time spent in discard
+  operations.
 
 See the kernel's
 [Documentation/iostats.txt](https://www.kernel.org/doc/Documentation/iostats.txt)
