@@ -41,6 +41,7 @@ including generated metrics, labels and configuration options.
 | Name | Description |
 | ---- | ----------- |
 | [`cpu`](#cpu) | CPU usage from `/proc/stat` and CPU frequency scaling data from sysfs. |
+| [`filesystem`](#filesystem) | Statistics of mounted filesystems from `statvfs(2)`. |
 | [`hwmon`](#hwmon) | Temperature, fan and voltage sensors from `/sys/class/hwmon`. |
 | [`meminfo`](#meminfo) | Memory usage statistics from `/proc/meminfo`. |
 | [`network`](#network) | Network device transmit/receive statistics from `/proc/net/dev`. |
@@ -82,13 +83,39 @@ Metrics and labels:
   `cpufreq/scaling_cur_freq` value under the CPU-specific sysfs
   directory.
 
+### `filesystem`
+
+Metrics:
+
+* `node_filesystem_size_bytes`: Total size of the filesystem.
+* `node_filesystem_free_bytes`: Number of free bytes in the
+  filesystem.
+* `node_filesystem_avail_bytes`: Number of free bytes available to
+  unprivileged users.
+* `node_filesystem_files`: Total number of inodes supported by the
+  filesystem.
+* `node_filesystem_files_free`: Number of free inodes.
+* `node_filesystem_readonly`: Whether the filesystem is mounted
+  read-only: `0` (rw) or `1` (ro).
+
+Labels:
+
+* `device`: Device node mounted at the location.
+* `fstype`: Mounted filesystem type.
+* `mountpoint`: Location where the filesystem is mounted.
+
+TODO: inclusion/exclusion lists.
+
+The data is derived from scanning `/proc/mounts` and calling
+`statvfs(2)` on all lines that pass the inclusion checks.
+
 ### `hwmon`
 
 The `hwmon` collector pulls data from all the sysfs subdirectories
 under `/sys/class/hwmon`. The supported entry types are temperature
 (`temp*`), fan (`fan*` and voltage (`in*`) sensors.
 
-Metrics and dimensions:
+Metrics:
 
 * `node_hwmon_temp_celsius`: Current temperature in degrees Celsius.
 * `node_hwmon_fan_rpm`: Current fan speed in RPM.
@@ -143,6 +170,14 @@ included in your `/proc/net/dev` file. A normal set is:
 | X |   | `multicast` | Byte count |
 |   | X | `colls` | Collisions while transmitting |
 |   | X | `carrier` | ? |
+
+By default, statistics are reported for all network interfaces except
+the loopback interface (`lo`). The `--network-include=` and
+`--network-exclude=` options can be used to define a comma-separated
+list of interface names to explicitly include and exclude,
+respectively. If an include list is set, only those interfaces are
+included. Otherwise, all interfaces *not* mentioned in the exclude
+list are included.
 
 ### `textfile`
 
