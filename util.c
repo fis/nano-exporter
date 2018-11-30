@@ -168,6 +168,22 @@ bool slist_contains(const struct slist *list, const char *key) {
   return false;
 }
 
+bool slist_matches(const struct slist *list, const char *key) {
+  size_t key_len = strlen(key);
+
+  for (; list; list = list->next) {
+    size_t match_len = strlen(list->data);
+    if (match_len > 0 && list->data[match_len-1] == '*') {
+      if (match_len-1 <= key_len && memcmp(list->data, key, match_len-1) == 0)
+        return true;
+    } else {
+      if (match_len == key_len && memcmp(list->data, key, key_len) == 0)
+        return true;
+    }
+  }
+  return false;
+}
+
 // miscellaneous utilities
 
 void *must_malloc(size_t size) {

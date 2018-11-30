@@ -145,7 +145,9 @@ arguments can be used to select which devices to report on. The format
 for both is a comma-separated list of device names (e.g.,
 `--diskstats-include=sda,sdb`). If an include list is provided, only
 those devices explicitly listed are included. Otherwise, all devices
-not mentioned on the exclude list are included.
+not mentioned on the exclude list are included. If the given value
+ends in `*`, it matches any string that begins with the part before
+the `*`; otherwise, the match must be exact.
 
 ### `filesystem`
 
@@ -178,7 +180,9 @@ filesystem passes all three tests, it is included in the metrics. For
 each category, if an include list is specified, only the explicitly
 listed values are accepted -- this overrides even the `/` prefix test
 for devices. If an include list is not set, all values not on the
-exclusion list are accepted.
+exclusion list are accepted. If the given value ends in `*`, it
+matches any string that begins with the part before the `*`;
+otherwise, the match must be exact.
 
 The data is derived from scanning `/proc/mounts` and calling
 `statvfs(2)` on all lines that pass the inclusion checks.
@@ -254,7 +258,9 @@ the loopback interface (`lo`). The `--network-include=` and
 list of interface names to explicitly include and exclude,
 respectively. If an include list is set, only those interfaces are
 included. Otherwise, all interfaces *not* mentioned in the exclude
-list are included.
+list are included. If the given value ends in `*`, it matches any
+string that begins with the part before the `*`; otherwise, the match
+must be exact.
 
 ### `textfile`
 

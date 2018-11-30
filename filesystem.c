@@ -117,26 +117,26 @@ static void filesystem_collect(scrape_req *req, void *ctx_ptr) {
       continue;
 
     if (ctx->include_device) {
-      if (!slist_contains(ctx->include_device, *dev))
+      if (!slist_matches(ctx->include_device, *dev))
         continue;
     } else {
       if (**dev != '/')
         continue;
-      if (ctx->exclude_device && slist_contains(ctx->exclude_device, *dev))
+      if (ctx->exclude_device && slist_matches(ctx->exclude_device, *dev))
         continue;
     }
     if (ctx->include_mount) {
-      if (!slist_contains(ctx->include_mount, *mount))
+      if (!slist_matches(ctx->include_mount, *mount))
         continue;
     } else if (ctx->exclude_mount) {
-      if (slist_contains(ctx->exclude_mount, *mount))
+      if (slist_matches(ctx->exclude_mount, *mount))
         continue;
     }
     if (ctx->include_type) {
-      if (!slist_contains(ctx->include_type, *fstype))
+      if (!slist_matches(ctx->include_type, *fstype))
         continue;
     } else if (ctx->exclude_type) {
-      if (slist_contains(ctx->exclude_type, *fstype))
+      if (slist_matches(ctx->exclude_type, *fstype))
         continue;
     }
 

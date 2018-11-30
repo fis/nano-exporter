@@ -124,10 +124,10 @@ static void diskstats_collect(scrape_req *req, void *ctx_ptr) {
     // filter
 
     if (ctx->include) {
-      if (!slist_contains(ctx->include, dev))
+      if (!slist_matches(ctx->include, dev))
         continue;
     } else if (ctx->exclude) {
-      if (slist_contains(ctx->exclude, dev))
+      if (slist_matches(ctx->exclude, dev))
         continue;
     }
 

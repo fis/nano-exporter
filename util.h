@@ -47,6 +47,7 @@ struct slist *slist_split(const char *str, const char *delim);
 struct slist **slist_append(struct slist **prev, const char *str);
 struct slist *slist_prepend(struct slist *list, const char *str);
 bool slist_contains(const struct slist *list, const char *key);
+bool slist_matches(const struct slist *list, const char *key);
 
 // miscellaneous utilities
 
