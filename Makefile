@@ -35,6 +35,10 @@ $(PROG): $(OBJS)
 	$(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 	@mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d && touch $@
 
+main.o: main.c $(DEPDIR)/main.d
+	$(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) -DXCOLLECTORS="$(foreach c,$(COLLECTORS),X($(c)))" -c -o $@ $<
+	@mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d && touch $@
+
 # make clean
 
 .PHONY: clean

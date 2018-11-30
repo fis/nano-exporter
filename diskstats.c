@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "diskstats.h"
+#include "collector.h"
 #include "util.h"
 
 // size of input buffer for paths and lines

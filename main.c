@@ -5,27 +5,25 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "cpu.h"
-#include "diskstats.h"
-#include "filesystem.h"
-#include "hwmon.h"
-#include "meminfo.h"
-#include "network.h"
+#include "collector.h"
 #include "scrape.h"
-#include "textfile.h"
-#include "uname.h"
 #include "util.h"
 
+#ifndef XCOLLECTORS
+#define XCOLLECTORS \
+  X(cpu) X(diskstats) X(filesystem) X(hwmon) \
+  X(meminfo) X(network) X(textfile) X(uname)
+#endif
+
+#define X(c) extern const struct collector c##_collector;
+XCOLLECTORS
+#undef X
+
+#define X(c) &c##_collector,
 static const struct collector *collectors[] = {
-  &cpu_collector,
-  &diskstats_collector,
-  &filesystem_collector,
-  &hwmon_collector,
-  &meminfo_collector,
-  &network_collector,
-  &textfile_collector,
-  &uname_collector,
+  XCOLLECTORS
 };
+#undef X
 #define NCOLLECTORS (sizeof collectors / sizeof *collectors)
 
 enum tristate { flag_off = -1, flag_undef = 0, flag_on = 1 };

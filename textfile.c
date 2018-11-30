@@ -4,7 +4,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "textfile.h"
+#include "collector.h"
 #include "util.h"
 
 // TODO: check default

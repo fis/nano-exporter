@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "cpu.h"
+#include "collector.h"
 #include "util.h"
 
 // limits for CPU numbers

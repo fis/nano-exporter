@@ -3,7 +3,7 @@
 #include <string.h>
 #include <sys/statvfs.h>
 
-#include "filesystem.h"
+#include "collector.h"
 #include "util.h"
 
 // size of input buffer for paths and lines

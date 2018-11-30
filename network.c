@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "network.h"
+#include "collector.h"
 #include "util.h"
 
 // size of input buffer for paths and lines

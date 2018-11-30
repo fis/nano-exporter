@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "hwmon.h"
+#include "collector.h"
 
 // size of input buffer for paths and lines
 #define BUF_SIZE 256
