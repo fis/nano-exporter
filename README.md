@@ -66,6 +66,7 @@ Reference](#collector-reference) section.
 | Flag | Description |
 | ---- | ----------- |
 | `--foreground` | Don't daemonize, but remain on the foreground instead. |
+| `--pidfile=F` | After daemonizing, write the PID of the process to file at *F*. No effect if combined with `--foreground`. |
 | `--port=X` | Listen on port *X* instead of the default port (9100). |
 
 ## Collector Reference

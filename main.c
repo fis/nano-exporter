@@ -35,11 +35,13 @@ enum tristate { flag_off = -1, flag_undef = 0, flag_on = 1 };
 struct config {
   const char *port;
   bool daemonize;
+  const char *pidfile;
 };
 
 const struct config default_config = {
   .port = "9100",
   .daemonize = true,
+  .pidfile = 0,
 };
 
 struct handler_ctx {
@@ -53,7 +55,7 @@ struct handler_ctx {
 
 static bool parse_args(int argc, char *argv[], struct config *cfg, struct handler_ctx *ctx);
 static bool initialize(struct handler_ctx *ctx, int max_args);
-static bool daemonize(void);
+static bool daemonize(struct config *cfg);
 static void handler(scrape_req *req, void *ctx_ptr);
 
 int main(int argc, char *argv[]) {
@@ -70,7 +72,7 @@ int main(int argc, char *argv[]) {
     return 1;
 
   if (cfg.daemonize)
-    if (!daemonize())
+    if (!daemonize(&cfg))
       return 1;
 
   scrape_serve(server, handler, &ctx);
@@ -121,6 +123,9 @@ static bool parse_args(int argc, char *argv[], struct config *cfg, struct handle
     } else if (strcmp(argv[arg], "--foreground") == 0) {
       cfg->daemonize = false;
       goto next_arg;
+    } else if (strncmp(argv[arg], "--pidfile=", 10) == 0) {
+      cfg->pidfile = &argv[arg][10];
+      goto next_arg;
     }
 
     fprintf(stderr, "unknown argument: %s\n", argv[arg]);
@@ -158,7 +163,7 @@ static bool initialize(struct handler_ctx *ctx, int max_args) {
   return true;
 }
 
-static bool daemonize(void) {
+static bool daemonize(struct config *cfg) {
   pid_t pid;
 
   pid = fork();
@@ -198,7 +203,15 @@ static bool daemonize(void) {
   else if (pid > 0)
     exit(0);  // lets the parent know all is well
 
-  // in the grandchild, continue execution
+  // attempt to record the grandchild PID, if asked to
+
+  if (cfg->pidfile) {
+    FILE *f = fopen(cfg->pidfile, "w");
+    if (f) {
+      fprintf(f, "%ld\n", (long) getpid());
+      fclose(f);
+    }
+  }
 
   return true;
 }
