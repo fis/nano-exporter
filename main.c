@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "cpu.h"
+#include "diskstats.h"
 #include "filesystem.h"
 #include "hwmon.h"
 #include "meminfo.h"
@@ -17,6 +18,7 @@
 
 static const struct collector *collectors[] = {
   &cpu_collector,
+  &diskstats_collector,
   &filesystem_collector,
   &hwmon_collector,
   &meminfo_collector,

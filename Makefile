@@ -2,6 +2,7 @@
 
 COLLECTORS =
 COLLECTORS += cpu
+COLLECTORS += diskstats
 COLLECTORS += filesystem
 COLLECTORS += hwmon
 COLLECTORS += meminfo

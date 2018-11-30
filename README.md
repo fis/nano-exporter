@@ -41,6 +41,7 @@ including generated metrics, labels and configuration options.
 | Name | Description |
 | ---- | ----------- |
 | [`cpu`](#cpu) | CPU usage from `/proc/stat` and CPU frequency scaling data from sysfs. |
+| [`diskstats`](#diskstats) | Disk I/O statistics from `/proc/diskstats`. |
 | [`filesystem`](#filesystem) | Statistics of mounted filesystems from `statvfs(2)`. |
 | [`hwmon`](#hwmon) | Temperature, fan and voltage sensors from `/sys/class/hwmon`. |
 | [`meminfo`](#meminfo) | Memory usage statistics from `/proc/meminfo`. |
@@ -82,6 +83,46 @@ Metrics and labels:
   in Hertz at the time of the scrape. This is the
   `cpufreq/scaling_cur_freq` value under the CPU-specific sysfs
   directory.
+
+### `diskstats`
+
+The metrics correspond to the columns of `/proc/diskstats`:
+
+* `node_disk_reads_completed_total`: Total number of successfully
+  completed disk reads.
+* `node_disk_reads_merged_total` Total number of adjacent reads merged
+  together.
+* `node_disk_read_bytes_total`: Total number of bytes read from the
+  device.
+* `node_disk_read_time_seconds_total`: Total time spent in read
+  requests.
+* `node_disk_writes_completed_total`: Total number of successfully
+  completed disk writes.
+* `node_disk_writes_merged_total`: Total number of adjacent writes
+  merged together.
+* `node_disk_written_bytes_total`: Total number of bytes written to
+  the device.
+* `node_disk_write_time_seconds_total`: Total time spent in write
+  requests.
+* `node_disk_io_now`: Number of I/O operations currently in progress.
+* `node_disk_io_time_seconds_total`: Total time spent in disk I/O.
+* `node_disk_io_time_weighted_seconds_total`: Time spent in disk I/O
+  weighted by the number of pending operations.
+
+See the kernel's
+[Documentation/iostats.txt](https://www.kernel.org/doc/Documentation/iostats.txt)
+for more details. The collector assumes the read/write totals are
+reported using a sector size of 512 bytes.
+
+All metrics have one label, `device`, containing the device name from
+`/proc/diskstats`.
+
+The `--diskstats-include=` and `--diskstats-exclude=` command line
+arguments can be used to select which devices to report on. The format
+for both is a comma-separated list of device names (e.g.,
+`--diskstats-include=sda,sdb`). If an include list is provided, only
+those devices explicitly listed are included. Otherwise, all devices
+not mentioned on the exclude list are included.
 
 ### `filesystem`
 
