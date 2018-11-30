@@ -1,15 +1,19 @@
 # prometheus-nano-exporter
 
-TODO: one-paragraph description.
+A minimalistic exporter of node metrics for the Prometheus monitoring
+system.
 
 ## Word of Warning
+
+This is not an officially supported Google product. It's also
+definitely not *used* by Google.
 
 There are no particularly compelling reasons to use this software over
 the alternatives. On a Real Computer™, the standard [Prometheus node
 exporter](https://github.com/prometheus/node_exporter) is perfectly
 adequate, and has a much larger feature set, not to mention adoption
-rate. On OpenWRT in particular, the standard community-supported
-package repository already has a lightweight Lua rewrite as
+rate. On OpenWRT, the standard community-supported package repository
+already contains a lightweight Lua rewrite as
 [prometheus-node-exporter-lua](https://openwrt.org/packages/pkgdata/prometheus-node-exporter-lua),
 which is even smaller in disk footprint, if you don't count the Lua
 interpreter.
@@ -23,7 +27,15 @@ Other than that, you might choose to use it for æsthetic reasons.
 
 ## Installation
 
-TODO: instructions.
+If you are able to compile code for your target system of choice, and
+are happy to include all collectors, you may simply compile all the
+`.c` files together.
+
+You can also use the bundled `Makefile`, which likely requires GNU
+Make. You can comment out collectors in the Makefile to leave them out
+of the build if you don't need them.
+
+TODO: OpenWrt feed + package definition + instructions.
 
 The metrics collection is highly Linux-specific. You probably won't
 have much luck on other operating systems.
@@ -194,7 +206,10 @@ All the metrics have the same two labels: `chip` and `sensor`. The
 chip.
 
 The values are by default directly as reported in sysfs: there's no
-built-in scaling. TODO: scaling options.
+built-in scaling.
+
+(TODO: potential future feature: configurable scaling via command line
+options.)
 
 ### `meminfo`
 
