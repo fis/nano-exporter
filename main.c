@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
   scrape_close(server);
 
   return 0;
-};
+}
 
 static bool parse_args(int argc, char *argv[], struct config *cfg, struct handler_ctx *ctx) {
   for (size_t i = 0; i < NCOLLECTORS; i++) {

@@ -167,6 +167,8 @@ static void hwmon_name(const char *path, char *dst, size_t dst_len) {
 }
 
 static void hwmon_collect(scrape_req *req, void *ctx) {
+  (void) ctx;
+
   // buffers
 
   char chip_label[LABEL_SIZE];

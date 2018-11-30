@@ -12,7 +12,7 @@ COLLECTORS += uname
 
 # compile settings
 
-CFLAGS = -std=c11 -Os
+CFLAGS = -std=c11 -Wall -Wextra -pedantic -Wno-format-truncation -Os
 LDFLAGS = -Os -s
 
 # build rules

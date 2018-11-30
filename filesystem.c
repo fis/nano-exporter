@@ -17,6 +17,8 @@ const struct collector filesystem_collector = {
 };
 
 static void filesystem_collect(scrape_req *req, void *ctx) {
+  (void) ctx;
+
   // buffers
 
   const char *labels[][2] = {  // all filled by code

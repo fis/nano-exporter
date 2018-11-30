@@ -26,6 +26,8 @@ struct cpu_context {
 };
 
 void *cpu_init(int argc, char *argv[]) {
+  (void) argc; (void) argv;
+
   long clock_tick = sysconf(_SC_CLK_TCK);
   if (clock_tick <= 0) {
     perror("sysconf(_SC_CLK_TCK)");
@@ -74,7 +76,7 @@ void cpu_collect(scrape_req *req, void *ctx_ptr) {
 
       char *at = buf + 3;
       char *sep = strchr(at, ' ');
-      if (!sep || sep - at + 1 > sizeof cpu_label)
+      if (!sep || sep - at + 1 > (ptrdiff_t) sizeof cpu_label)
         continue;
       *sep = '\0';
       strcpy(cpu_label, at);

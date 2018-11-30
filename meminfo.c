@@ -26,6 +26,8 @@ const struct collector meminfo_collector = {
 };
 
 static void meminfo_collect(scrape_req *req, void *ctx) {
+  (void) ctx;
+
   // buffers
 
   char buf[BUF_SIZE] = METRIC_PREFIX;

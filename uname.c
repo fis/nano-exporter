@@ -28,6 +28,8 @@ struct uname_context {
 };
 
 static void *uname_init(int argc, char *argv[]) {
+  (void) argc; (void) argv;
+
   struct utsname name;
   if (uname(&name) == -1) {
     perror("uname");
