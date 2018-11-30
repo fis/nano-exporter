@@ -65,6 +65,7 @@ Reference](#collector-reference) section.
 
 | Flag | Description |
 | ---- | ----------- |
+| `--foreground` | Don't daemonize, but remain on the foreground instead. |
 | `--port=X` | Listen on port *X* instead of the default port (9100). |
 
 ## Collector Reference
