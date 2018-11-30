@@ -134,7 +134,7 @@ The metrics correspond to the columns of `/proc/diskstats`:
 
 See the kernel's
 [Documentation/iostats.txt](https://www.kernel.org/doc/Documentation/iostats.txt)
-for more details. The collector assumes the read/write totals are
+file for more details. The collector assumes the read/write totals are
 reported using a sector size of 512 bytes.
 
 All metrics have one label, `device`, containing the device name from
@@ -148,6 +148,9 @@ those devices explicitly listed are included. Otherwise, all devices
 not mentioned on the exclude list are included. If the given value
 ends in `*`, it matches any string that begins with the part before
 the `*`; otherwise, the match must be exact.
+
+By default, if the device is entirely unused (all metrics are 0), it's
+omitted. Use `--diskstats-keep-unused` to include even those devices.
 
 ### `filesystem`
 

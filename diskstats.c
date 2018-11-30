@@ -42,6 +42,7 @@ const struct collector diskstats_collector = {
 struct diskstats_context {
   struct slist *include;
   struct slist *exclude;
+  bool filter_unused;
 };
 
 static void *diskstats_init(int argc, char *argv[]) {
@@ -49,12 +50,15 @@ static void *diskstats_init(int argc, char *argv[]) {
 
   ctx->include = 0;
   ctx->exclude = 0;
+  ctx->filter_unused = true;
 
   for (int arg = 0; arg < argc; arg++) {
     if (strncmp(argv[arg], "include=", 8) == 0) {
       ctx->include = slist_split(&argv[arg][8], ",");
     } else if (strncmp(argv[arg], "exclude=", 8) == 0) {
       ctx->exclude = slist_split(&argv[arg][8], ",");
+    } else if (strcmp(argv[arg], "keep-unused") == 0) {
+      ctx->filter_unused = false;
     } else {
       fprintf(stderr, "unknown argument for diskstats collector: %s", argv[arg]);
       return 0;
@@ -129,6 +133,11 @@ static void diskstats_collect(scrape_req *req, void *ctx_ptr) {
     } else if (ctx->exclude) {
       if (slist_matches(ctx->exclude, dev))
         continue;
+    }
+    if (ctx->filter_unused) {
+      char *tail = dev + strlen(dev) + 1;
+      if (tail < buf + sizeof buf && strspn(tail, " 0\n") == strlen(tail))
+        continue;  // only spaces, zeros and newlines: unused device
     }
 
     // emit metrics while known columns last
