@@ -55,8 +55,13 @@ int main(int argc, char *argv[]) {
     return 1;
   if (!initialize(&ctx, argc > 0 ? argc - 1 : 0))
     return 1;
-  if (!scrape_serve(cfg.port, handler, &ctx))
+
+  scrape_server *server = scrape_listen(cfg.port);
+  if (!server)
     return 1;
+
+  scrape_serve(server, handler, &ctx);
+  scrape_close(server);
 
   return 0;
 };

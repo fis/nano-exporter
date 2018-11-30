@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <poll.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -24,13 +25,16 @@ struct scrape_req {
   cbuf *buf;
 };
 
+struct scrape_server {
+  struct pollfd fds[MAX_LISTEN_SOCKETS];
+  nfds_t nfds;
+};
+
 static bool handle_http(struct scrape_req *req);
 
-bool scrape_serve(const char *port, scrape_handler *handler, void *handler_ctx) {
-  struct scrape_req req;
-
-  struct pollfd fds[MAX_LISTEN_SOCKETS];
-  nfds_t nfds = 0;
+scrape_server *scrape_listen(const char *port) {
+  scrape_server *srv = must_malloc(sizeof *srv);
+  srv->nfds = 0;
 
   int ret;
 
@@ -49,7 +53,7 @@ bool scrape_serve(const char *port, scrape_handler *handler, void *handler_ctx) 
       return false;
     }
 
-    for (struct addrinfo *a = addrs; a && nfds < MAX_LISTEN_SOCKETS; a = a->ai_next) {
+    for (struct addrinfo *a = addrs; a && srv->nfds < MAX_LISTEN_SOCKETS; a = a->ai_next) {
       int s = socket(a->ai_family, a->ai_socktype, a->ai_protocol);
       if (s == -1) {
         perror("socket");
@@ -76,41 +80,42 @@ bool scrape_serve(const char *port, scrape_handler *handler, void *handler_ctx) 
         continue;
       }
 
-      fds[nfds].fd = s;
-      fds[nfds].events = POLLIN;
-      nfds++;
+      srv->fds[srv->nfds].fd = s;
+      srv->fds[srv->nfds].events = POLLIN;
+      srv->nfds++;
     }
   }
 
-  if (nfds == 0) {
+  if (srv->nfds == 0) {
     fprintf(stderr, "failed to bind any sockets\n");
-    return false;
+    return 0;
   }
 
+  return srv;
+}
+
+void scrape_serve(scrape_server *srv, scrape_handler *handler, void *handler_ctx) {
+  struct scrape_req req;
   req.buf = cbuf_alloc(BUF_INITIAL, BUF_MAX);
-  if (!req.buf) {
-    perror("cbuf_alloc");
-    for (nfds_t i = 0; i < nfds; i++)
-      close(fds[i].fd);
-    return false;
-  }
+
+  int ret;
 
   while (1) {
-    ret = poll(fds, nfds, -1);
+    ret = poll(srv->fds, srv->nfds, -1);
     if (ret == -1) {
       perror("poll");
       break;
     }
 
-    for (nfds_t i = 0; i < nfds; i++) {
-      if (fds[i].revents == 0)
+    for (nfds_t i = 0; i < srv->nfds; i++) {
+      if (srv->fds[i].revents == 0)
         continue;
-      if (fds[i].revents != POLLIN) {
-        fprintf(stderr, "poll .revents = %d\n", fds[i].revents);
-        goto break_loop;
+      if (srv->fds[i].revents != POLLIN) {
+        fprintf(stderr, "poll .revents = %d\n", srv->fds[i].revents);
+        return;
       }
 
-      req.socket = accept(fds[i].fd, 0, 0);
+      req.socket = accept(srv->fds[i].fd, 0, 0);
       if (req.socket == -1) {
         perror("accept");
         continue;
@@ -121,12 +126,12 @@ bool scrape_serve(const char *port, scrape_handler *handler, void *handler_ctx) 
       close(req.socket);
     }
   }
-break_loop:
+}
 
-  for (nfds_t i = 0; i < nfds; i++)
-    close(fds[i].fd);
-
-  return false;
+void scrape_close(scrape_server *srv) {
+  for (nfds_t i = 0; i < srv->nfds; i++)
+    close(srv->fds[i].fd);
+  free(srv);
 }
 
 void scrape_write(scrape_req *req, const char *metric, const char *(*labels)[2], double value) {

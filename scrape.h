@@ -4,14 +4,23 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+/** Opaque type to represent the scrape server. */
+typedef struct scrape_server scrape_server;
+
 /** Opaque type to represent an ongoing scrape request. */
 typedef struct scrape_req scrape_req;
 
 /** Function type for a scrape server callback. */
 typedef void scrape_handler(scrape_req *req, void *ctx);
 
-/** Starts a scrape server in the given port. */
-bool scrape_serve(const char *port, scrape_handler *handler, void *handler_ctx);
+/** Sets up a scrape server listening at the given port. */
+scrape_server *scrape_listen(const char *port);
+
+/** Enters a loop serving scrape requests using the provided handler. */
+void scrape_serve(scrape_server *server, scrape_handler *handler, void *handler_ctx);
+
+/** Closes the scrape server sockets and frees any resources. */
+void scrape_close(scrape_server *server);
 
 /**
  * Writes a metric value as a response to a scrape.
