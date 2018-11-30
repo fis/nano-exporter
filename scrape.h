@@ -1,5 +1,5 @@
-#ifndef PNANOE_SCRAPE_H_
-#define PNANOE_SCRAPE_H_ 1
+#ifndef NANO_EXPORTER_SCRAPE_H_
+#define NANO_EXPORTER_SCRAPE_H_ 1
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -41,4 +41,4 @@ void scrape_write(scrape_req *req, const char *metric, const char *(*labels)[2],
  */
 void scrape_write_raw(scrape_req *req, const void *buf, size_t len);
 
-#endif // PNANOE_SCRAPE_H_
+#endif // NANO_EXPORTER_SCRAPE_H_

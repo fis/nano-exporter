@@ -1,5 +1,5 @@
-#ifndef PNANOE_COLLECTOR_H_
-#define PNANOE_COLLECTOR_H_ 1
+#ifndef NANO_EXPORTER_COLLECTOR_H_
+#define NANO_EXPORTER_COLLECTOR_H_ 1
 
 #include "stdbool.h"
 
@@ -12,4 +12,4 @@ struct collector {
   bool has_args;
 };
 
-#endif // PNANOE_COLLECTOR_H_
+#endif // NANO_EXPORTER_COLLECTOR_H_

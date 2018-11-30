@@ -1,4 +1,4 @@
-# prometheus-nano-exporter
+# nano-exporter
 
 A minimalistic exporter of node metrics for the Prometheus monitoring
 system.

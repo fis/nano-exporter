@@ -162,14 +162,14 @@ void scrape_write_raw(scrape_req *req, const void *buf, size_t len) {
 
 static const char http_success[] =
     "HTTP/1.1 200 OK\r\n"
-    "Server: prometheus-nano-exporter\r\n"
+    "Server: nano-exporter\r\n"
     "Content-Type: text/plain; charset=UTF-8\r\n"
     "Connection: close\r\n"
     "\r\n"
     ;
 static const char http_error[] =
     "HTTP/1.1 400 Bad Request\r\n"
-    "Server: prometheus-nano-exporter\r\n"
+    "Server: nano-exporter\r\n"
     "Content-Type: text/plain; charset=UTF-8\r\n"
     "Connection: close\r\n"
     "\r\n"

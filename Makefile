@@ -17,7 +17,7 @@ LDFLAGS = -Os -s
 
 # build rules
 
-PROG = prometheus-nano-exporter
+PROG = nano-exporter
 SRCS = main.c scrape.c util.c $(foreach c,$(COLLECTORS),$(c).c)
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 

@@ -1,5 +1,5 @@
-#ifndef PNANOE_UTIL_H_
-#define PNANOE_UTIL_H_ 1
+#ifndef NANO_EXPORTER_UTIL_H_
+#define NANO_EXPORTER_UTIL_H_ 1
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -62,4 +62,4 @@ char *fgets_line(char *s, int size, FILE *stream);
  */
 int write_all(int fd, const void *buf, size_t len);
 
-#endif // PNANOE_UTIL_H_
+#endif // NANO_EXPORTER_UTIL_H_
