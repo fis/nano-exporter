@@ -152,11 +152,21 @@ Metrics:
 
 Labels:
 
-* `device`: Device node mounted at the location.
+* `device`: Device node path mounted at the location.
 * `fstype`: Mounted filesystem type.
 * `mountpoint`: Location where the filesystem is mounted.
 
-TODO: inclusion/exclusion lists.
+By default, all mounts where the device path starts with an `/` are
+included. Command line arguments of the form
+`--filesystem-{in,ex}clude-{device,type,mount}=X,Y,Z` can be used to
+define comma-separated inclusion and exclusion lists for the device
+path, filesystem type and mountpoint labels, respectively. Each of the
+three categories is tested independently, and only if a mounted
+filesystem passes all three tests, it is included in the metrics. For
+each category, if an include list is specified, only the explicitly
+listed values are accepted -- this overrides even the `/` prefix test
+for devices. If an include list is not set, all values not on the
+exclusion list are accepted.
 
 The data is derived from scanning `/proc/mounts` and calling
 `statvfs(2)` on all lines that pass the inclusion checks.
