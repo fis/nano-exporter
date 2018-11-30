@@ -7,8 +7,7 @@
 #include "collector.h"
 #include "util.h"
 
-// TODO: check default
-#define DEFAULT_DIR "/var/lib/prometheus-node-exporter"
+#define DEFAULT_DIR "/var/lib/prometheus/node-exporter"
 
 void *textfile_init(int argc, char *argv[]);
 void textfile_collect(scrape_req *req, void *ctx);
