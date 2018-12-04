@@ -18,10 +18,9 @@ PKG_NAME:=nano-exporter
 PKG_VERSION:=1.0.0
 PKG_RELEASE:=1
 
-PKG_SOURCE:=nano-exporter-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://zem.fi/tmp/
-#PKG_SOURCE_URL:=https://github.com/fis/nano-exporter/releases/download/1.0.0/
-PKG_HASH:=5ab1193f1224231bb21bbfae805ac274f42167045b9150400d5ad3f0d75819c1
+PKG_SOURCE:=v$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://github.com/fis/nano-exporter/archive/
+PKG_HASH:=db192d0420f1c34ecb442b54b31fd1b4371800423f66adbf9a9a65695ebc8b02
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
 
