@@ -58,6 +58,7 @@ including generated metrics, labels and configuration options.
 | [`hwmon`](#hwmon) | Temperature, fan and voltage sensors from `/sys/class/hwmon`. |
 | [`meminfo`](#meminfo) | Memory usage statistics from `/proc/meminfo`. |
 | [`network`](#network) | Network device transmit/receive statistics from `/proc/net/dev`. |
+| [`stat`](#stat) | Basic statistics from `/proc/stat`. |
 | [`textfile`](#textfile) | Custom metrics from `.prom` text files dropped in a directory. |
 | [`uname`](#uname) | Node information returned by the `uname` system call. |
 
@@ -264,6 +265,17 @@ included. Otherwise, all interfaces *not* mentioned in the exclude
 list are included. If the given value ends in `*`, it matches any
 string that begins with the part before the `*`; otherwise, the match
 must be exact.
+
+### `stat`
+
+This collectors exports the following metrics from `/proc/stat`:
+
+* `node_boot_time_seconds`: System boot time as a Unix timestamp (seconds since 1970).
+* `node_context_switches_total`: Total number of context switches done by the system.
+* `node_forks_total`: Total number of forks since boot.
+* `node_intr_total`: Total number of interrupts serviced.
+* `node_procs_blocked`: Number of processes currently blocked for I/O.
+* `node_procs_running`: Number of processes currently in runnable state.
 
 ### `textfile`
 

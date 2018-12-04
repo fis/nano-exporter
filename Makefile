@@ -21,6 +21,7 @@ COLLECTORS += filesystem
 COLLECTORS += hwmon
 COLLECTORS += meminfo
 COLLECTORS += network
+COLLECTORS += stat
 COLLECTORS += textfile
 COLLECTORS += uname
 
