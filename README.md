@@ -35,10 +35,35 @@ You can also use the bundled `Makefile`, which likely requires GNU
 Make. You can comment out collectors in the Makefile to leave them out
 of the build if you don't need them.
 
-TODO: OpenWrt feed + package definition + instructions.
-
 The metrics collection is highly Linux-specific. You probably won't
 have much luck on other operating systems.
+
+### Including in an OpenWrt build
+
+If you're building an OpenWrt system, you can include this program by
+adding the following line to your `feeds.conf` file:
+
+```
+src-git nanoexporter https://github.com/fis/nano-exporter.git;openwrt
+```
+
+Then update the feed, and install the package:
+
+```shell
+./scripts/feeds update nanoexporter
+./scripts/feeds install -p nanoexporter -a
+```
+
+The package `nano-exporter` should now be available in `make
+menuconfig`, under the "Utilities" heading.
+
+## Issues and contributions
+
+Please report any issues on the [GitHub issues
+page](https://github.com/fis/nano-exporter/issues).
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to
+contribute patches and other code.
 
 ## Collectors
 
