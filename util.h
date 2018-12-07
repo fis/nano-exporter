@@ -118,4 +118,9 @@ char *fgets_line(char *s, int size, FILE *stream);
  */
 int write_all(int fd, const void *buf, size_t len);
 
+#ifndef PATH
+/** Macro for constructing absolute paths in release, relative paths in tests. */
+#define PATH(p) p
+#endif // PATH
+
 #endif // NANO_EXPORTER_UTIL_H_

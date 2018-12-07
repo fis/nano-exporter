@@ -84,7 +84,7 @@ void cpu_collect(scrape_req *req, void *ctx_ptr) {
 
   // collect node_cpu_seconds_total metrics from /proc/stat
 
-  f = fopen("/proc/stat", "r");
+  f = fopen(PATH("/proc/stat"), "r");
   if (f) {
     while (fgets_line(buf, sizeof buf, f)) {
       if (strncmp(buf, "cpu", 3) != 0 || (buf[3] < '0' || buf[3] > '9'))
@@ -124,7 +124,7 @@ void cpu_collect(scrape_req *req, void *ctx_ptr) {
   // collect node_cpu_frequency_hertz metrics from /sys/devices/system/cpu/cpu*/cpufreq
 
   for (int cpu = 0; cpu <= MAX_CPU_ID; cpu++) {
-#define PATH_FORMAT "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq"
+#define PATH_FORMAT PATH("/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq")
     char path[sizeof PATH_FORMAT - 2 + MAX_CPU_DIGITS + 1];
     snprintf(path, sizeof path, PATH_FORMAT, cpu);
 
@@ -144,4 +144,10 @@ void cpu_collect(scrape_req *req, void *ctx_ptr) {
 
     fclose(f);
   }
+}
+
+// exposed only for testing
+
+void cpu_test_override_tick(void *ctx, long tick) {
+  ((struct cpu_context *) ctx)->clock_tick = tick;
 }

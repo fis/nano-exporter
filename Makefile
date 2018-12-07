@@ -41,6 +41,7 @@ $(shell mkdir -p $(DEPDIR) >/dev/null)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 all: $(PROG)
+.PHONY: all
 
 $(PROG): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
@@ -54,12 +55,19 @@ main.o: main.c $(DEPDIR)/main.d
 	$(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) -DXCOLLECTORS="$(foreach c,$(COLLECTORS),X($(c)))" -c -o $@ $<
 	@mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d && touch $@
 
+# tests
+
+.PHONY: test
+test:
+	$(MAKE) -C test run_all
+
 # make clean
 
 .PHONY: clean
 clean:
 	$(RM) $(PROG) $(OBJS)
 	$(RM) -r $(DEPDIR)
+	$(MAKE) -C test clean
 
 # dependencies
 

@@ -46,6 +46,8 @@ struct label {
 
 #define LABEL_END ((struct label){ .key = 0, .value = 0 })
 
+#define LABEL_LIST(...) ((struct label[]){ __VA_ARGS__, LABEL_END })
+
 /**
  * Writes a metric value as a response to a scrape.
  *
