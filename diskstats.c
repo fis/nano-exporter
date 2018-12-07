@@ -143,7 +143,7 @@ static void diskstats_collect(scrape_req *req, void *ctx_ptr) {
     // emit metrics while known columns last
 
     for (size_t c = 0; c < NCOLUMNS; c++) {
-      char *v = strtok_r(0, " ", &p);
+      char *v = strtok_r(0, " \n", &p);
       if (!v || *v == '\0')
         break;
 
