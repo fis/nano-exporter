@@ -106,7 +106,7 @@ static void diskstats_collect(scrape_req *req, void *ctx_ptr) {
 
   // emit metrics for all known columns of /proc/diskstats for included devices
 
-  f = fopen("/proc/diskstats", "r");
+  f = fopen(PATH("/proc/diskstats"), "r");
   if (!f)
     return;
 
