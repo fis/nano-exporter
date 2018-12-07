@@ -81,15 +81,15 @@ static void filesystem_collect(scrape_req *req, void *ctx_ptr) {
 
   // buffers
 
-  const char *labels[][2] = {  // all filled by code
-    { "device", 0 },
-    { "fstype", 0 },
-    { "mountpoint", 0 },
-    { 0, 0 },
+  struct label labels[] = {  // all values filled by code
+    { .key = "device", .value = 0 },
+    { .key = "fstype", .value = 0 },
+    { .key = "mountpoint", .value = 0 },
+    LABEL_END,
   };
-  const char **dev = &labels[0][1];
-  const char **fstype = &labels[1][1];
-  const char **mount = &labels[2][1];
+  char **dev = &labels[0].value;
+  char **fstype = &labels[1].value;
+  char **mount = &labels[2].value;
 
   char buf[BUF_SIZE];
 

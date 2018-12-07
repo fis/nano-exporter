@@ -190,10 +190,10 @@ static void hwmon_collect(scrape_req *req, void *ctx) {
   char chip_label[LABEL_SIZE];
   char sensor_label[LABEL_SIZE];
 
-  const char *labels[][2] = {
-    { "chip", chip_label },
-    { "sensor", sensor_label },
-    { 0, 0 },
+  struct label labels[] = {
+    { .key = "chip", .value = chip_label },
+    { .key = "sensor", .value = sensor_label },
+    LABEL_END,
   };
 
   char path[BUF_SIZE];

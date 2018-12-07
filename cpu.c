@@ -63,19 +63,19 @@ void cpu_collect(scrape_req *req, void *ctx_ptr) {
   // buffers
 
   char cpu_label[MAX_CPU_DIGITS + 1] = "";
-  static const char *modes[] = {
+  static char *modes[] = {
     "user", "nice", "system", "idle", "iowait", "irq", "softirq", "steal",
     0,
   };
 
-  const char *stat_labels[][2] = {
-    { "cpu", cpu_label },
-    { "mode", 0 },  // filled by code
-    { 0, 0 },
+  struct label stat_labels[] = {
+    { .key = "cpu", .value = cpu_label },
+    { .key = "mode", .value = 0 },  // value filled by code
+    LABEL_END,
   };
-  const char *freq_labels[][2] = {
-    { "cpu", cpu_label },
-    { 0, 0 },
+  struct label freq_labels[] = {
+    { .key = "cpu", .value = cpu_label },
+    LABEL_END,
   };
 
   char buf[BUF_SIZE];
@@ -98,7 +98,7 @@ void cpu_collect(scrape_req *req, void *ctx_ptr) {
       strcpy(cpu_label, at);
 
       at = sep + 1;
-      for (const char **mode = modes; *mode; mode++) {
+      for (char **mode = modes; *mode; mode++) {
         while (*at == ' ')
           at++;
         sep = strpbrk(at, " \n");
@@ -112,7 +112,7 @@ void cpu_collect(scrape_req *req, void *ctx_ptr) {
           break;
         value /= ctx->clock_tick;
 
-        stat_labels[1][1] = *mode;
+        stat_labels[1].value = *mode;
         scrape_write(req, "node_cpu_seconds_total", stat_labels, value);
 
         at = sep + 1;

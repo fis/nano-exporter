@@ -150,17 +150,17 @@ void scrape_close(scrape_server *srv) {
   free(srv);
 }
 
-void scrape_write(scrape_req *req, const char *metric, const char *(*labels)[2], double value) {
+void scrape_write(scrape_req *req, const char *metric, const struct label *labels, double value) {
   cbuf_reset(req->buf);
 
   cbuf_puts(req->buf, metric);
 
-  if (labels && (*labels)[0]) {
+  if (labels && labels->key) {
     cbuf_putc(req->buf, '{');
-    for (const char *(*l)[2] = labels; (*l)[0]; l++) {
+    for (const struct label *l = labels; l->key; l++) {
       if (l != labels)
         cbuf_putc(req->buf, ',');
-      cbuf_putf(req->buf, "%s=\"%s\"", (*l)[0], (*l)[1]);
+      cbuf_putf(req->buf, "%s=\"%s\"", l->key, l->value);
     }
     cbuf_putc(req->buf, '}');
   }

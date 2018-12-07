@@ -38,17 +38,25 @@ void scrape_serve(scrape_server *server, scrape_handler *handler, void *handler_
 /** Closes the scrape server sockets and frees any resources. */
 void scrape_close(scrape_server *server);
 
+/** Container for label keys and values. */
+struct label {
+  char *key;
+  char *value;
+};
+
+#define LABEL_END ((struct label){ .key = 0, .value = 0 })
+
 /**
  * Writes a metric value as a response to a scrape.
  *
- * The \p labels parameter can be `NULL` if no extra labels need to be attached. If not null, it
- * should point at the first element of an array of 2-element arrays of pointers, where the first
- * element of each pair is the label name, and the second the label value. A pair of null pointers
- * terminates the label array.
+ * The \p labels parameter can be `NULL` if no extra labels need to be
+ * attached. If not null, it should point at the first element of an
+ * array of `struct label` objects, terminated by a sentinel value
+ * with a null pointer as the key.
  *
  * Returns `false` if setting up the server failed, otherwise does not return.
  */
-void scrape_write(scrape_req *req, const char *metric, const char *(*labels)[2], double value);
+void scrape_write(scrape_req *req, const char *metric, const struct label *labels, double value);
 
 /**
  * Writes raw data to the scrape response.

@@ -149,9 +149,9 @@ static void network_collect(scrape_req *req, void *ctx_ptr) {
 
   // buffers
 
-  const char *labels[][2] = {
-    { "device", 0 },  // filled by code
-    { 0, 0 },
+  struct label labels[] = {
+    { .key = "device", .value = 0 },  // value filled by code
+    LABEL_END,
   };
 
   char buf[BUF_SIZE];
@@ -176,7 +176,7 @@ static void network_collect(scrape_req *req, void *ctx_ptr) {
     if (!p)
       continue;
     *p = '\0';
-    labels[0][1] = dev;
+    labels[0].value = dev;
     p++;
 
     if (ctx->include) {

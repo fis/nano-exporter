@@ -40,7 +40,7 @@ enum {
 };
 
 struct uname_context {
-  const char *labels[max_label + 1][2];
+  struct label labels[max_label + 1];
 };
 
 static void *uname_init(int argc, char *argv[]) {
@@ -53,17 +53,17 @@ static void *uname_init(int argc, char *argv[]) {
   }
 
   struct uname_context *ctx = must_malloc(sizeof *ctx);
-  ctx->labels[label_machine][0] = "machine";
-  ctx->labels[label_machine][1] = must_strdup(name.machine);
-  ctx->labels[label_nodename][0] = "nodename";
-  ctx->labels[label_nodename][1] = must_strdup(name.nodename);
-  ctx->labels[label_release][0] = "release";
-  ctx->labels[label_release][1] = must_strdup(name.release);
-  ctx->labels[label_sysname][0] = "sysname";
-  ctx->labels[label_sysname][1] = must_strdup(name.sysname);
-  ctx->labels[label_version][0] = "version";
-  ctx->labels[label_version][1] = must_strdup(name.version);
-  ctx->labels[max_label][0] = ctx->labels[max_label][1] = 0;
+  ctx->labels[label_machine].key = "machine";
+  ctx->labels[label_machine].value = must_strdup(name.machine);
+  ctx->labels[label_nodename].key = "nodename";
+  ctx->labels[label_nodename].value = must_strdup(name.nodename);
+  ctx->labels[label_release].key = "release";
+  ctx->labels[label_release].value = must_strdup(name.release);
+  ctx->labels[label_sysname].key = "sysname";
+  ctx->labels[label_sysname].value = must_strdup(name.sysname);
+  ctx->labels[label_version].key = "version";
+  ctx->labels[label_version].value = must_strdup(name.version);
+  ctx->labels[max_label].key = ctx->labels[max_label].value = 0;
   return ctx;
 }
 
