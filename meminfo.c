@@ -52,7 +52,7 @@ static void meminfo_collect(scrape_req *req, void *ctx) {
 
   // convert /proc/meminfo to metrics format
 
-  f = fopen("/proc/meminfo", "r");
+  f = fopen(PATH("/proc/meminfo"), "r");
   if (!f)
     return;
 
