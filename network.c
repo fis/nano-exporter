@@ -52,7 +52,7 @@ struct network_context {
 static void *network_init(int argc, char *argv[]) {
   // parse header from /proc/net/dev and prepare metric names
 
-  FILE *f = fopen("/proc/net/dev", "r");
+  FILE *f = fopen(PATH("/proc/net/dev"), "r");
   if (!f) {
     perror("fopen /proc/net/dev");
     return 0;
@@ -160,7 +160,7 @@ static void network_collect(scrape_req *req, void *ctx_ptr) {
 
   // read network stats from /proc/net/dev
 
-  f = fopen("/proc/net/dev", "r");
+  f = fopen(PATH("/proc/net/dev"), "r");
   if (!f)
     return;
 
