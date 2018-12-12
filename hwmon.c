@@ -24,6 +24,7 @@
 #include <unistd.h>
 
 #include "collector.h"
+#include "util.h"
 
 // size of input buffer for paths and lines
 #define BUF_SIZE 256
@@ -206,14 +207,14 @@ static void hwmon_collect(scrape_req *req, void *ctx) {
 
   // iterate over all hwmon instances in /sys/class/hwmon
 
-  root = opendir("/sys/class/hwmon");
+  root = opendir(PATH("/sys/class/hwmon"));
   if (!root)
     return;
 
   while ((dent = readdir(root))) {
     if (strncmp(dent->d_name, "hwmon", 5) != 0)
       continue;
-    snprintf(path, sizeof path, "/sys/class/hwmon/%s", dent->d_name);
+    snprintf(path, sizeof path, PATH("/sys/class/hwmon/%s"), dent->d_name);
 
     hwmon_name(path, chip_label, sizeof chip_label);
 

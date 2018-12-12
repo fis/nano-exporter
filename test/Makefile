@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-COLLECTOR_TESTS := cpu diskstats filesystem
+COLLECTOR_TESTS := cpu diskstats filesystem hwmon
 
 COLLECTOR_TEST_PROGS := $(foreach c,$(COLLECTOR_TESTS),$(c)_test)
 COLLECTOR_TEST_OBJS := $(foreach p,$(COLLECTOR_TEST_PROGS),$(p).o)

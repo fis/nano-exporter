@@ -23,6 +23,7 @@
 scrape_req *mock_scrape_start(test_env *env);
 void mock_scrape_free(scrape_req *req);
 
+void mock_scrape_sort(scrape_req *req);
 void mock_scrape_expect(scrape_req *req, const char *metric, const struct label *labels, double value);
 void mock_scrape_expect_raw(scrape_req *req, const char *str);
 void mock_scrape_expect_no_more(scrape_req *req);

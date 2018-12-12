@@ -15,6 +15,7 @@
  */
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "harness.h"
@@ -80,6 +81,43 @@ void mock_scrape_free(scrape_req *req) {
     free_labels(req->metrics[i].labels);
   }
   free(req);
+}
+
+static int metric_cmp(const void *a_ptr, const void *b_ptr) {
+  const struct scrape_metric *a = a_ptr;
+  const struct scrape_metric *b = b_ptr;
+  int c;
+
+  c = strcmp(a->metric, b->metric);
+  if (c != 0)
+    return c;
+
+  unsigned a_labels = 0, b_labels = 0;
+  for (const struct label *p = a->labels; p && p->key; p++) a_labels++;
+  for (const struct label *p = b->labels; p && p->key; p++) b_labels++;
+  if (a_labels < b_labels)
+    return -1;
+  else if (a_labels > b_labels)
+    return 1;
+  for (const struct label *pa = a->labels, *pb = b->labels; pa && pa->key; pa++, pb++) {
+    c = strcmp(pa->key, pb->key);
+    if (c != 0)
+      return c;
+    c = strcmp(pa->value, pb->value);
+    if (c != 0)
+      return c;
+  }
+
+  if (a->value < b->value)
+    return -1;
+  else if (a->value > b->value)
+    return 1;
+  return 0;
+}
+
+void mock_scrape_sort(scrape_req *req) {
+  if (req->metrics_written > 0)
+    qsort(req->metrics, req->metrics_written, sizeof *req->metrics, metric_cmp);
 }
 
 void mock_scrape_expect(scrape_req *req, const char *metric, const struct label *labels, double value) {

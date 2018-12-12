@@ -26,6 +26,7 @@ typedef struct test_env test_env;
 // functions for use from tests
 
 void test_write_file(test_env *env, const char *path, const char *contents);
+void test_add_link(test_env *env, const char *path, const char *target);
 
 void test_fail(test_env *env, const char *err, ...);
 

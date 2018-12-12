@@ -68,6 +68,19 @@ void test_write_file(test_env *env, const char *path, const char *contents) {
   close(fd);
 }
 
+void test_add_link(test_env *env, const char *path, const char *target) {
+  if (*path == '/')
+    test_fail(env, "test_write_file path is absolute: %s", path);
+  const char *file = strrchr(path, '/');
+  file = file ? file + 1 : path;
+
+  testdir_setup(env);
+  int dir_fd = testdir_getdir(env, path);
+  if (symlinkat(target, dir_fd, file) == -1)
+    test_fail(env, "in %s: %s: unable to create a symlink to %s: %s", path, file, target, strerror(errno));
+  testdir_closedir(env, dir_fd);
+}
+
 void test_fail(test_env *env, const char *err, ...) {
   va_list ap;
 
