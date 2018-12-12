@@ -38,7 +38,7 @@ struct scrape_req {
   unsigned metrics_written;
   unsigned metrics_tested;
 
-  const char *raws[MAX_RAWS];
+  char *raws[MAX_RAWS];
   unsigned raws_written;
   unsigned raws_tested;
 };
@@ -64,7 +64,10 @@ void scrape_write_raw(scrape_req *req, const void *buf, size_t len) {
   if (req->metrics_written >= MAX_RAWS)
     test_fail(req->env, "exceeded MAX_RAWS: %u raw blocks already written", req->raws_written);
 
-  test_fail(req->env, "TODO: implement scrape_write_raw");
+  char *raw = must_malloc(len + 1);
+  memcpy(raw, buf, len);
+  raw[len] = '\0';
+  req->raws[req->raws_written++] = raw;
 }
 
 scrape_req *mock_scrape_start(test_env *env) {
@@ -80,6 +83,8 @@ void mock_scrape_free(scrape_req *req) {
     free(req->metrics[i].metric);
     free_labels(req->metrics[i].labels);
   }
+  for (unsigned i = 0; i < req->raws_written; i++)
+    free(req->raws[i]);
   free(req);
 }
 
@@ -141,7 +146,18 @@ void mock_scrape_expect(scrape_req *req, const char *metric, const struct label 
 }
 
 void mock_scrape_expect_raw(scrape_req *req, const char *str) {
-  test_fail(req->env, "TODO: implement");
+  if (req->raws_tested >= req->raws_written) {
+    dump_metrics(req);
+    test_fail(req->env, "got no more raw blocks, expected [[[%s]]]", str);
+  }
+  char *got = req->raws[req->raws_tested];
+
+  if (strcmp(got, str) != 0) {
+    dump_metrics(req);
+    test_fail(req->env, "got raw block [[[%s]]], expected [[[%s]]]", got, str);
+  }
+
+  req->raws_tested++;
 }
 
 void mock_scrape_expect_no_more(scrape_req *req) {
@@ -150,7 +166,8 @@ void mock_scrape_expect_no_more(scrape_req *req) {
     test_fail(req->env, "got metric %s, expected no more metrics", req->metrics[req->metrics_tested].metric);
   }
   if (req->raws_tested < req->raws_written) {
-    test_fail(req->env, "TODO: raw stuff");
+    dump_metrics(req);
+    test_fail(req->env, "got raw block [[[%s]]], expected no more raw blocks", req->raws[req->raws_tested]);
   }
 }
 
@@ -171,7 +188,17 @@ static void dump_metrics(scrape_req *req) {
     }
   }
 
-  // TODO: dump raw
+  if (req->raws_tested > 0) {
+    printf("expected raw blocks:\n");
+    for (unsigned i = 0; i < req->raws_tested; i++)
+      printf("[[[%s]]]\n", req->raws[i]);
+  }
+
+  if (req->raws_written > req->raws_tested) {
+    printf("unexpected raw blocks:\n");
+    for (unsigned i = req->raws_tested; i < req->raws_written; i++)
+      printf("[[[%s]]]\n", req->raws[i]);
+  }
 }
 
 static void dump_metric(const char *metric, const struct label *labels, double value) {
