@@ -74,7 +74,7 @@ static void meminfo_collect(scrape_req *req, void *ctx) {
     do p++; while (*p == ' ');
 
     double value = strtod(p, &p);
-    if (*p != '\0' && *p != ' ')
+    if (*p != '\0' && *p != '\n' && *p != ' ')
       continue;
 
     if (*p == ' ') {
