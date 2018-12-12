@@ -56,7 +56,7 @@ static void stat_collect(scrape_req *req, void *ctx) {
 
   // scan /proc/stat for metrics
 
-  f = fopen("/proc/stat", "r");
+  f = fopen(PATH("/proc/stat"), "r");
   if (!f)
     return;
 
