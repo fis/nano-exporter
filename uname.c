@@ -43,6 +43,20 @@ struct uname_context {
   struct label labels[max_label + 1];
 };
 
+static void uname_set_labels(struct uname_context *ctx, struct utsname *name) {
+  ctx->labels[label_machine].key = "machine";
+  ctx->labels[label_machine].value = must_strdup(name->machine);
+  ctx->labels[label_nodename].key = "nodename";
+  ctx->labels[label_nodename].value = must_strdup(name->nodename);
+  ctx->labels[label_release].key = "release";
+  ctx->labels[label_release].value = must_strdup(name->release);
+  ctx->labels[label_sysname].key = "sysname";
+  ctx->labels[label_sysname].value = must_strdup(name->sysname);
+  ctx->labels[label_version].key = "version";
+  ctx->labels[label_version].value = must_strdup(name->version);
+  ctx->labels[max_label].key = ctx->labels[max_label].value = 0;
+}
+
 static void *uname_init(int argc, char *argv[]) {
   (void) argc; (void) argv;
 
@@ -53,21 +67,17 @@ static void *uname_init(int argc, char *argv[]) {
   }
 
   struct uname_context *ctx = must_malloc(sizeof *ctx);
-  ctx->labels[label_machine].key = "machine";
-  ctx->labels[label_machine].value = must_strdup(name.machine);
-  ctx->labels[label_nodename].key = "nodename";
-  ctx->labels[label_nodename].value = must_strdup(name.nodename);
-  ctx->labels[label_release].key = "release";
-  ctx->labels[label_release].value = must_strdup(name.release);
-  ctx->labels[label_sysname].key = "sysname";
-  ctx->labels[label_sysname].value = must_strdup(name.sysname);
-  ctx->labels[label_version].key = "version";
-  ctx->labels[label_version].value = must_strdup(name.version);
-  ctx->labels[max_label].key = ctx->labels[max_label].value = 0;
+  uname_set_labels(ctx, &name);
   return ctx;
 }
 
 static void uname_collect(scrape_req *req, void *ctx_ptr) {
   struct uname_context *ctx = ctx_ptr;
   scrape_write(req, "node_uname_info", ctx->labels, 1.0);
+}
+
+// exposed only for testing
+
+void uname_test_override_data(void *ctx, struct utsname *name) {
+  uname_set_labels((struct uname_context *) ctx, name);
 }
