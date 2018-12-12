@@ -42,6 +42,7 @@ struct filesystem_context {
   struct slist *exclude_mount;
   struct slist *include_type;
   struct slist *exclude_type;
+  int (*statvfs_func)(const char *path, struct statvfs *buf);
 };
 
 static void *filesystem_init(int argc, char *argv[]) {
@@ -73,6 +74,7 @@ static void *filesystem_init(int argc, char *argv[]) {
     }
   }
 
+  ctx->statvfs_func = statvfs;
   return ctx;
 }
 
@@ -98,7 +100,7 @@ static void filesystem_collect(scrape_req *req, void *ctx_ptr) {
 
   // loop over /proc/mounts to get visible mounts
 
-  f = fopen("/proc/mounts", "r");
+  f = fopen(PATH("/proc/mounts"), "r");
   if (!f)
     return;
 
@@ -142,7 +144,7 @@ static void filesystem_collect(scrape_req *req, void *ctx_ptr) {
 
     // report metrics from statfs
 
-    if (statvfs(*mount, &fs) != 0)
+    if (ctx->statvfs_func(*mount, &fs) != 0)
       continue;
 
     double bs = fs.f_frsize;
@@ -155,4 +157,10 @@ static void filesystem_collect(scrape_req *req, void *ctx_ptr) {
   }
 
   fclose(f);
+}
+
+// exposed only for testing
+
+void filesystem_test_override_statvfs(void *ctx, int (*statvfs_func)(const char *path, struct statvfs *buf)) {
+  ((struct filesystem_context *) ctx)->statvfs_func = statvfs_func;
 }
