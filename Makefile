@@ -72,7 +72,7 @@ clean:
 # release workflow
 
 TARBALL_COMMIT ?= HEAD
-TARBALL_SUFFIX ?= $(shell git describe --always --tags --match 'v*' $(TARBALL_COMMIT))
+TARBALL_SUFFIX ?= $(shell git describe --always --tags --match 'v*' $(TARBALL_COMMIT) | sed -e 's/^v//')
 
 .PHONY: tarball
 tarball:
