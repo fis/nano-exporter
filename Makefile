@@ -69,6 +69,15 @@ clean:
 	$(RM) -r $(DEPDIR)
 	$(MAKE) -C test clean
 
+# release workflow
+
+TARBALL_COMMIT ?= HEAD
+TARBALL_SUFFIX ?= $(shell git describe --always --tags --match 'v*' $(TARBALL_COMMIT))
+
+.PHONY: tarball
+tarball:
+	git archive --format=tar --prefix=nano-exporter-$(TARBALL_SUFFIX)/ $(TARBALL_COMMIT) | gzip -c -9 > nano-exporter-$(TARBALL_SUFFIX).tar.gz
+
 # dependencies
 
 $(DEPDIR)/%.d: ;
