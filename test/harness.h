@@ -40,7 +40,7 @@ void test_fail(test_env *env, const char *err, ...);
 
 #define RUN_TEST(name) do { \
     if (!test_start(env, #name)) return false; \
-    if (setjmp(*test_escape(env)) != 0) { success = false; break; } \
+    if (setjmp(*test_escape(env)) != 0) { test_cleanup(env); success = false; break; } \
     testcase_##name(env); \
     if (!test_cleanup(env)) return false; \
   } while (0)
