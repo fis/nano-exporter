@@ -308,7 +308,7 @@ The `textfile` collector can be used to conveniently export custom
 node-bound metrics. Metrics in any files ending in `.prom` in the
 designated directory are included in the scrape. Generally you should
 write to a file with a different suffix (say `.prom.tmp`) and then
-atomically rename the file, to prevent the server for sending data
+atomically rename the file, to prevent the server from sending data
 from incomplete metrics files.
 
 The implementation in this program copies the file contents directly
