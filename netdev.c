@@ -32,24 +32,24 @@
 // default list of interfaces to exclude
 #define DEFAULT_EXCLUDE "lo"
 
-static void *network_init(int argc, char *argv[]);
-static void network_collect(scrape_req *req, void *ctx);
+static void *netdev_init(int argc, char *argv[]);
+static void netdev_collect(scrape_req *req, void *ctx);
 
-const struct collector network_collector = {
-  .name = "network",
-  .collect = network_collect,
-  .init = network_init,
+const struct collector netdev_collector = {
+  .name = "netdev",
+  .collect = netdev_collect,
+  .init = netdev_init,
   .has_args = true,
 };
 
-struct network_context {
+struct netdev_context {
   size_t ncolumns;
   char *columns[MAX_COLUMNS];
   struct slist *include;
   struct slist *exclude;
 };
 
-static void *network_init(int argc, char *argv[]) {
+static void *netdev_init(int argc, char *argv[]) {
   // parse header from /proc/net/dev and prepare metric names
 
   FILE *f = fopen(PATH("/proc/net/dev"), "r");
@@ -82,7 +82,7 @@ static void *network_init(int argc, char *argv[]) {
     return 0;
   }
 
-  struct network_context *ctx = malloc(sizeof *ctx);
+  struct netdev_context *ctx = malloc(sizeof *ctx);
   if (!ctx) {
     perror("malloc");
     return 0;
@@ -128,7 +128,7 @@ static void *network_init(int argc, char *argv[]) {
       continue;
     }
 
-    fprintf(stderr, "unknown argument for network collector: %s\n", argv[arg]);
+    fprintf(stderr, "unknown argument for netdev collector: %s\n", argv[arg]);
     goto cleanup;
   }
 
@@ -144,8 +144,8 @@ cleanup:
   return 0;
 }
 
-static void network_collect(scrape_req *req, void *ctx_ptr) {
-  struct network_context *ctx = ctx_ptr;
+static void netdev_collect(scrape_req *req, void *ctx_ptr) {
+  struct netdev_context *ctx = ctx_ptr;
 
   // buffers
 

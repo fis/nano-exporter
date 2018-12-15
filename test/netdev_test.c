@@ -18,9 +18,9 @@
 #include "mock_scrape.h"
 #include "../collector.h"
 
-extern const struct collector network_collector;
+extern const struct collector netdev_collector;
 
-TEST(network_metrics) {
+TEST(netdev_metrics) {
   test_write_file(
       env,
       "proc/net/dev",
@@ -30,8 +30,8 @@ TEST(network_metrics) {
       "  eno1:   12345    1234   12   23   34    45         56        67    98765    9876   98   87   76    65      54         43\n");
   scrape_req *req = mock_scrape_start(env);
 
-  void *ctx = network_collector.init(0, 0);
-  network_collector.collect(req, ctx);
+  void *ctx = netdev_collector.init(0, 0);
+  netdev_collector.collect(req, ctx);
 
   struct label *labels;
   labels = LABEL_LIST({"device", "eno1"});
@@ -57,6 +57,6 @@ TEST(network_metrics) {
 
 TEST_SUITE {
   TEST_SUITE_START;
-  RUN_TEST(network_metrics);
+  RUN_TEST(netdev_metrics);
   TEST_SUITE_END;
 }

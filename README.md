@@ -82,7 +82,7 @@ including generated metrics, labels and configuration options.
 | [`filesystem`](#filesystem) | Statistics of mounted filesystems from `statvfs(2)`. |
 | [`hwmon`](#hwmon) | Temperature, fan and voltage sensors from `/sys/class/hwmon`. |
 | [`meminfo`](#meminfo) | Memory usage statistics from `/proc/meminfo`. |
-| [`network`](#network) | Network device transmit/receive statistics from `/proc/net/dev`. |
+| [`netdev`](#netdev) | Network device transmit/receive statistics from `/proc/net/dev`. |
 | [`stat`](#stat) | Basic statistics from `/proc/stat`. |
 | [`textfile`](#textfile) | Custom metrics from `.prom` text files dropped in a directory. |
 | [`uname`](#uname) | Node information returned by the `uname` system call. |
@@ -256,7 +256,7 @@ If the line in `/proc/meminfo` has a `kB` suffix, the suffix `_bytes`
 is also appended to the metric name, and the value multiplied by 1024
 to convert it to bytes.
 
-### `network`
+### `netdev`
 
 Metrics and labels:
 
@@ -282,8 +282,8 @@ included in your `/proc/net/dev` file. A normal set is:
 |   | X | `carrier` | ? |
 
 By default, statistics are reported for all network interfaces except
-the loopback interface (`lo`). The `--network-include=` and
-`--network-exclude=` options can be used to define a comma-separated
+the loopback interface (`lo`). The `--netdev-include=` and
+`--netdev-exclude=` options can be used to define a comma-separated
 list of interface names to explicitly include and exclude,
 respectively. If an include list is set, only those interfaces are
 included. Otherwise, all interfaces *not* mentioned in the exclude

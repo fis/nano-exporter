@@ -32,7 +32,7 @@
 #ifndef XCOLLECTORS
 #define XCOLLECTORS \
   X(cpu) X(diskstats) X(filesystem) X(hwmon) \
-  X(meminfo) X(network) X(stat) X(textfile) X(uname)
+  X(meminfo) X(netdev) X(stat) X(textfile) X(uname)
 #endif
 
 #define X(c) extern const struct collector c##_collector;
