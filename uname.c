@@ -76,8 +76,8 @@ static void uname_collect(scrape_req *req, void *ctx_ptr) {
   scrape_write(req, "node_uname_info", ctx->labels, 1.0);
 }
 
-// exposed only for testing
-
+#ifdef NANO_EXPORTER_TEST
 void uname_test_override_data(void *ctx, struct utsname *name) {
   uname_set_labels((struct uname_context *) ctx, name);
 }
+#endif // NANO_EXPORTER_TEST

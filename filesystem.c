@@ -159,8 +159,8 @@ static void filesystem_collect(scrape_req *req, void *ctx_ptr) {
   fclose(f);
 }
 
-// exposed only for testing
-
+#ifdef NANO_EXPORTER_TEST
 void filesystem_test_override_statvfs(void *ctx, int (*statvfs_func)(const char *path, struct statvfs *buf)) {
   ((struct filesystem_context *) ctx)->statvfs_func = statvfs_func;
 }
+#endif // NANO_EXPORTER_TEST

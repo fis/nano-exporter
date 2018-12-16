@@ -146,8 +146,8 @@ void cpu_collect(scrape_req *req, void *ctx_ptr) {
   }
 }
 
-// exposed only for testing
-
+#ifdef NANO_EXPORTER_TEST
 void cpu_test_override_tick(void *ctx, long tick) {
   ((struct cpu_context *) ctx)->clock_tick = tick;
 }
+#endif // NANO_EXPORTER_TEST

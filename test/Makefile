@@ -31,7 +31,7 @@ $(COLLECTOR_TEST_OBJS): %.o: %.c harness.h mock_scrape.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 $(COLLECTOR_TEST_IMPLS): %_test.impl.o: ../%.c stub.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -include stub.h -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -include stub.h -DNANO_EXPORTER_TEST=1 -c -o $@ $<
 
 $(COLLECTOR_TEST_PROGS): %: %.o %.impl.o harness.o mock_scrape.o util.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
