@@ -38,7 +38,7 @@
 
 struct scrape_req {
   int socket;
-  cbuf *buf;
+  bbuf *buf;
 };
 
 struct scrape_server {
@@ -112,7 +112,7 @@ scrape_server *scrape_listen(const char *port) {
 
 void scrape_serve(scrape_server *srv, scrape_handler *handler, void *handler_ctx) {
   struct scrape_req req;
-  req.buf = cbuf_alloc(BUF_INITIAL, BUF_MAX);
+  req.buf = bbuf_alloc(BUF_INITIAL, BUF_MAX);
 
   int ret;
 
@@ -151,24 +151,24 @@ void scrape_close(scrape_server *srv) {
 }
 
 void scrape_write(scrape_req *req, const char *metric, const struct label *labels, double value) {
-  cbuf_reset(req->buf);
+  bbuf_reset(req->buf);
 
-  cbuf_puts(req->buf, metric);
+  bbuf_puts(req->buf, metric);
 
   if (labels && labels->key) {
-    cbuf_putc(req->buf, '{');
+    bbuf_putc(req->buf, '{');
     for (const struct label *l = labels; l->key; l++) {
       if (l != labels)
-        cbuf_putc(req->buf, ',');
-      cbuf_putf(req->buf, "%s=\"%s\"", l->key, l->value);
+        bbuf_putc(req->buf, ',');
+      bbuf_putf(req->buf, "%s=\"%s\"", l->key, l->value);
     }
-    cbuf_putc(req->buf, '}');
+    bbuf_putc(req->buf, '}');
   }
 
-  cbuf_putf(req->buf, " %.16g\n", value);
+  bbuf_putf(req->buf, " %.16g\n", value);
 
   size_t buf_len;
-  const char *buf = cbuf_get(req->buf, &buf_len);
+  const char *buf = bbuf_get(req->buf, &buf_len);
   write_all(req->socket, buf, buf_len);
 }
 
@@ -194,7 +194,7 @@ static const char http_error[] =
 
 static bool handle_http(struct scrape_req *req) {
   unsigned char http_buf[1024];
-  cbuf *tmp_buf = req->buf;
+  bbuf *tmp_buf = req->buf;
 
   enum {
     state_read_method,
@@ -203,7 +203,7 @@ static bool handle_http(struct scrape_req *req) {
     state_skip_headers_1,
     state_skip_headers_2
   } state = state_read_method;
-  cbuf_reset(tmp_buf);
+  bbuf_reset(tmp_buf);
 
   while (true) {
     ssize_t got = read(req->socket, &http_buf, sizeof http_buf);
@@ -217,41 +217,41 @@ static bool handle_http(struct scrape_req *req) {
       switch (state) {
         case state_read_method:
           if (c == ' ') {
-            if (cbuf_cmp(tmp_buf, "GET") != 0)
+            if (bbuf_cmp(tmp_buf, "GET") != 0)
               goto fail;
             state = state_read_path;
-            cbuf_reset(tmp_buf);
+            bbuf_reset(tmp_buf);
             break;
           }
-          if (!isalnum(c) || cbuf_len(tmp_buf) >= 16)
+          if (!isalnum(c) || bbuf_len(tmp_buf) >= 16)
             goto fail;
-          cbuf_putc(tmp_buf, c);
+          bbuf_putc(tmp_buf, c);
           break;
 
         case state_read_path:
           if (c == ' ') {
-            if (cbuf_cmp(tmp_buf, "/metrics") != 0)
+            if (bbuf_cmp(tmp_buf, "/metrics") != 0)
               goto fail;
             state = state_read_version;
-            cbuf_reset(tmp_buf);
+            bbuf_reset(tmp_buf);
             break;
           }
-          if (!isprint(c) || c == '\n' || cbuf_len(tmp_buf) >= 128)
+          if (!isprint(c) || c == '\n' || bbuf_len(tmp_buf) >= 128)
             goto fail;
-          cbuf_putc(tmp_buf, c);
+          bbuf_putc(tmp_buf, c);
           break;
 
         case state_read_version:
           if (c == '\n') {
-            if (cbuf_cmp(tmp_buf, "HTTP/1.1") != 0)
+            if (bbuf_cmp(tmp_buf, "HTTP/1.1") != 0)
               goto fail;
             state = state_skip_headers_1;
-            cbuf_reset(tmp_buf);
+            bbuf_reset(tmp_buf);
             break;
           }
-          if (!isgraph(c) || cbuf_len(tmp_buf) >= 16)
+          if (!isgraph(c) || bbuf_len(tmp_buf) >= 16)
             goto fail;
-          cbuf_putc(tmp_buf, c);
+          bbuf_putc(tmp_buf, c);
           break;
 
         case state_skip_headers_1:

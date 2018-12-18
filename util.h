@@ -24,31 +24,31 @@
 // character buffers
 
 /** Opaque type for an internally maintained character (byte) buffer. */
-typedef struct cbuf cbuf;
+typedef struct bbuf bbuf;
 
 /** Allocates a new buffer with \p initial_size, growing up to \p max_size. */
-cbuf *cbuf_alloc(size_t initial_size, size_t max_size);
+bbuf *bbuf_alloc(size_t initial_size, size_t max_size);
 /** Clears the contents of the buffer, resetting it to the empty string. */
-void cbuf_reset(cbuf *buf);
+void bbuf_reset(bbuf *buf);
 /** Returns the current length of the buffer contents. */
-size_t cbuf_len(cbuf *buf);
+size_t bbuf_len(bbuf *buf);
 /** Appends \p len bytes from address \p src to the buffer \p buf. */
-void cbuf_put(cbuf *buf, const void *src, size_t len);
+void bbuf_put(bbuf *buf, const void *src, size_t len);
 /** Appends the null-terminated string at \p src to the buffer \p buf. */
-void cbuf_puts(cbuf *buf, const char *src);
+void bbuf_puts(bbuf *buf, const char *src);
 /** Appends a single byte \p c to \p buf. */
-void cbuf_putc(cbuf *buf, int c);
+void bbuf_putc(bbuf *buf, int c);
 /** Appends a formatted string to \p buf. */
-void cbuf_putf(cbuf *buf, const char *fmt, ...);
+void bbuf_putf(bbuf *buf, const char *fmt, ...);
 /**
  * Returns the contents of \p buf, writing the length to \p len.
  *
  * There may not be a terminating '\0' byte after the contents. And even if there is, the returned
  * length will not include it.
  */
-const char *cbuf_get(struct cbuf *buf, size_t *len);
+const char *bbuf_get(struct bbuf *buf, size_t *len);
 /** Compares the contents of \p buf to the string in \p other, in shortlex order. */
-int cbuf_cmp(cbuf *buf, const char *other);
+int bbuf_cmp(bbuf *buf, const char *other);
 
 // string lists
 

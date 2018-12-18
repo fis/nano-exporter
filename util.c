@@ -28,14 +28,14 @@
 
 // character buffers
 
-struct cbuf {
+struct bbuf {
   char *data;
   size_t len;
   size_t size;
   size_t max_size;
 };
 
-static bool cbuf_reserve(cbuf *buf, size_t len) {
+static bool bbuf_reserve(bbuf *buf, size_t len) {
   if (buf->len + len <= buf->size)
     return true;
 
@@ -51,8 +51,8 @@ static bool cbuf_reserve(cbuf *buf, size_t len) {
   return true;
 }
 
-cbuf *cbuf_alloc(size_t initial_size, size_t max_size) {
-  cbuf *buf = must_malloc(sizeof *buf);
+bbuf *bbuf_alloc(size_t initial_size, size_t max_size) {
+  bbuf *buf = must_malloc(sizeof *buf);
   buf->data = must_malloc(initial_size);
   buf->len = 0;
   buf->size = initial_size;
@@ -60,32 +60,32 @@ cbuf *cbuf_alloc(size_t initial_size, size_t max_size) {
   return buf;
 }
 
-void cbuf_reset(cbuf *buf) {
+void bbuf_reset(bbuf *buf) {
   buf->len = 0;
 }
 
-size_t cbuf_len(cbuf *buf) {
+size_t bbuf_len(bbuf *buf) {
   return buf->len;
 }
 
-void cbuf_put(cbuf *buf, const void *src, size_t len) {
-  if (!cbuf_reserve(buf, len))
+void bbuf_put(bbuf *buf, const void *src, size_t len) {
+  if (!bbuf_reserve(buf, len))
     return;
   memcpy(buf->data + buf->len, src, len);
   buf->len += len;
 }
 
-void cbuf_puts(cbuf *buf, const char *src) {
-  cbuf_put(buf, src, strlen(src));
+void bbuf_puts(bbuf *buf, const char *src) {
+  bbuf_put(buf, src, strlen(src));
 }
 
-void cbuf_putc(cbuf *buf, int c) {
-  if (!cbuf_reserve(buf, 1))
+void bbuf_putc(bbuf *buf, int c) {
+  if (!bbuf_reserve(buf, 1))
     return;
   buf->data[buf->len++] = c;
 }
 
-void cbuf_putf(cbuf *buf, const char *fmt, ...) {
+void bbuf_putf(bbuf *buf, const char *fmt, ...) {
   va_list ap;
 
   int len = 0;
@@ -94,7 +94,7 @@ void cbuf_putf(cbuf *buf, const char *fmt, ...) {
   va_end(ap);
 
   if (len > 0) {
-    if (!cbuf_reserve(buf, len + 1))
+    if (!bbuf_reserve(buf, len + 1))
       return;
     va_start(ap, fmt);
     vsnprintf(buf->data + buf->len, len + 1, fmt, ap);
@@ -103,12 +103,12 @@ void cbuf_putf(cbuf *buf, const char *fmt, ...) {
   }
 }
 
-const char *cbuf_get(struct cbuf *buf, size_t *len) {
+const char *bbuf_get(struct bbuf *buf, size_t *len) {
   *len = buf->len;
   return buf->data;
 }
 
-int cbuf_cmp(cbuf *buf, const char *other) {
+int bbuf_cmp(bbuf *buf, const char *other) {
   size_t other_len = strlen(other);
   if (buf->len < other_len)
     return -1;
