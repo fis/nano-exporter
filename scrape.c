@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <poll.h>
@@ -27,6 +28,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "scrape.h"
@@ -38,6 +40,9 @@
 #define MAX_LISTEN_SOCKETS 4
 #define MAX_BACKLOG 16
 #define MAX_REQUESTS 16
+
+#define TIMEOUT_SEC 30
+#define TIMEOUT_NSEC 0
 
 enum req_state {
   req_state_inactive,
@@ -64,6 +69,7 @@ struct scrape_req {
   bbuf *buf;
   char *io;
   size_t io_size;
+  struct timespec timeout;
 };
 
 struct scrape_server {
@@ -76,6 +82,10 @@ struct scrape_server {
 static void req_start(struct scrape_server *srv, int socket);
 static void req_close(struct scrape_server *srv, unsigned r);
 static void req_process(struct scrape_server *srv, unsigned r, unsigned ncoll, const struct collector *coll[], void *coll_ctx[]);
+
+static void timeout_start(scrape_req *req);
+static bool timeout_test(scrape_req *req);
+static int timeout_next_millis(scrape_req *reqs);
 
 // TCP socket server
 
@@ -151,7 +161,7 @@ void scrape_serve(scrape_server *srv, unsigned ncoll, const struct collector *co
   int ret;
 
   while (1) {
-    ret = poll(srv->fds, srv->nfds_listen + srv->nfds_req, -1);
+    ret = poll(srv->fds, srv->nfds_listen + srv->nfds_req, timeout_next_millis(srv->reqs));
     if (ret == -1) {
       perror("poll");
       break;
@@ -179,10 +189,16 @@ void scrape_serve(scrape_server *srv, unsigned ncoll, const struct collector *co
     // handle ongoing requests
 
     for (nfds_t i = srv->nfds_listen; i < srv->nfds_listen + srv->nfds_req; i++) {
+      unsigned r = i - srv->nfds_listen;
+
+      if (timeout_test(&srv->reqs[r])) {
+        req_close(srv, r);
+        continue;
+      }
+
       if (srv->fds[i].fd < 0 || srv->fds[i].revents == 0)
         continue;
 
-      unsigned r = i - srv->nfds_listen;
       if ((srv->fds[i].revents & ~(POLLIN | POLLOUT)) != 0)
         req_close(srv, r);
       else
@@ -248,13 +264,14 @@ static void req_start(struct scrape_server *srv, int s) {
   if (r >= srv->nfds_req)
     srv->nfds_req = r + 1;
 
-  struct scrape_req *req = &srv->reqs[r];
+  scrape_req *req = &srv->reqs[r];
   struct pollfd *pfd = &srv->fds[srv->nfds_listen + r];
 
   req->state = req_state_read;
   req->parse_state = http_read_start;
   if (!req->buf)
     req->buf = bbuf_alloc(BUF_INITIAL, BUF_MAX);
+  timeout_start(req);
 
   pfd->fd = s;
   pfd->events = POLLIN;
@@ -304,9 +321,7 @@ static const char http_error[] =
     ;
 
 static void req_process(struct scrape_server *srv, unsigned r, unsigned ncoll, const struct collector *coll[], void *coll_ctx[]) {
-  // TODO: add timeout support
-
-  struct scrape_req *req = &srv->reqs[r];
+  scrape_req *req = &srv->reqs[r];
   struct pollfd *pfd = &srv->fds[srv->nfds_listen + r];
 
   if (req->state == req_state_inactive)
@@ -368,6 +383,67 @@ rewrite:
   }
 
   req_close(srv, r);
+}
+
+// timeout implementation
+
+static void timeout_start(scrape_req *req) {
+  struct timespec *t = &req->timeout;
+
+  if (clock_gettime(CLOCK_MONOTONIC, t) != -1) {
+    t->tv_sec += TIMEOUT_SEC;
+    t->tv_nsec += TIMEOUT_NSEC;
+    if (t->tv_nsec >= 1000000000) {
+      t->tv_nsec -= 1000000000;
+      t->tv_sec += 1;
+    }
+  } else {
+    t->tv_sec = 0;
+    t->tv_nsec = 0;
+  }
+}
+
+static bool timeout_test(scrape_req *req) {
+  struct timespec now;
+  if (clock_gettime(CLOCK_MONOTONIC, &now) == -1)
+    return false;
+  struct timespec *t = &req->timeout;
+  return now.tv_sec > t->tv_sec || (now.tv_sec == t->tv_sec && now.tv_nsec > t->tv_nsec);
+}
+
+static int timeout_next_millis(scrape_req *reqs) {
+  struct timespec next = { .tv_sec = 0, .tv_nsec = 0 };
+
+  for (unsigned i = 0; i < MAX_REQUESTS; i++) {
+    scrape_req *req = &reqs[i];
+    if (req->state == req_state_inactive)
+      continue;
+    struct timespec *t = &req->timeout;
+    if (t->tv_sec == 0 && t->tv_nsec == 0)
+      continue;
+
+    if ((next.tv_sec == 0 && next.tv_nsec == 0) || t->tv_sec < next.tv_sec || (t->tv_sec == next.tv_sec && t->tv_nsec < next.tv_nsec))
+      next = *t;
+  }
+
+  if (next.tv_sec == 0 && next.tv_nsec == 0)
+    return -1;  // no expiring timeouts
+
+  struct timespec now;
+  if (clock_gettime(CLOCK_MONOTONIC, &now) == -1)
+    return -1;  // can't tell the time
+
+  long long millis = next.tv_sec - now.tv_sec;
+  millis *= 1000;
+  millis += (next.tv_nsec - now.tv_nsec) / 1000000;
+  millis += 10;  // cut some slack
+
+  if (millis <= 10)
+    return 10;
+  else if (millis > INT_MAX)
+    return INT_MAX;
+  else
+    return millis;
 }
 
 // HTTP protocol functions
