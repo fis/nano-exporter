@@ -60,6 +60,11 @@ bbuf *bbuf_alloc(size_t initial_size, size_t max_size) {
   return buf;
 }
 
+void bbuf_free(bbuf *buf) {
+  free(buf->data);
+  free(buf);
+}
+
 void bbuf_reset(bbuf *buf) {
   buf->len = 0;
 }
@@ -103,7 +108,7 @@ void bbuf_putf(bbuf *buf, const char *fmt, ...) {
   }
 }
 
-const char *bbuf_get(struct bbuf *buf, size_t *len) {
+char *bbuf_get(struct bbuf *buf, size_t *len) {
   *len = buf->len;
   return buf->data;
 }

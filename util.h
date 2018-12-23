@@ -28,6 +28,8 @@ typedef struct bbuf bbuf;
 
 /** Allocates a new buffer with \p initial_size, growing up to \p max_size. */
 bbuf *bbuf_alloc(size_t initial_size, size_t max_size);
+/** Frees all the storage associated with \p buf. */
+void bbuf_free(bbuf *buf);
 /** Clears the contents of the buffer, resetting it to the empty string. */
 void bbuf_reset(bbuf *buf);
 /** Returns the current length of the buffer contents. */
@@ -46,7 +48,7 @@ void bbuf_putf(bbuf *buf, const char *fmt, ...);
  * There may not be a terminating '\0' byte after the contents. And even if there is, the returned
  * length will not include it.
  */
-const char *bbuf_get(struct bbuf *buf, size_t *len);
+char *bbuf_get(struct bbuf *buf, size_t *len);
 /** Compares the contents of \p buf to the string in \p other, in shortlex order. */
 int bbuf_cmp(bbuf *buf, const char *other);
 
