@@ -19,7 +19,7 @@
 #include <string.h>
 #include <sys/statvfs.h>
 
-#include "collector.h"
+#include "scrape.h"
 #include "util.h"
 
 // size of input buffer for paths and lines

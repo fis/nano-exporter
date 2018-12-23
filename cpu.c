@@ -19,7 +19,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "collector.h"
+#include "scrape.h"
 #include "util.h"
 
 // limits for CPU numbers

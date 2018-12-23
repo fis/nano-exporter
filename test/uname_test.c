@@ -19,7 +19,6 @@
 
 #include "harness.h"
 #include "mock_scrape.h"
-#include "../collector.h"
 
 extern const struct collector uname_collector;
 void uname_test_override_data(void *ctx, struct utsname *name);

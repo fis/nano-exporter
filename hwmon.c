@@ -23,7 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "collector.h"
+#include "scrape.h"
 #include "util.h"
 
 // size of input buffer for paths and lines

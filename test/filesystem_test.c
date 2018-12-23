@@ -20,7 +20,6 @@
 
 #include "harness.h"
 #include "mock_scrape.h"
-#include "../collector.h"
 
 extern const struct collector filesystem_collector;
 void filesystem_test_override_statvfs(void *ctx, int (*statvfs_func)(const char *path, struct statvfs *buf));

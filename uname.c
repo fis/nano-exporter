@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <sys/utsname.h>
 
-#include "collector.h"
+#include "scrape.h"
 #include "util.h"
 
 static void *uname_init(int argc, char *argv[]);

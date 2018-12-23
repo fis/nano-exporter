@@ -26,14 +26,19 @@ typedef struct scrape_server scrape_server;
 /** Opaque type to represent an ongoing scrape request. */
 typedef struct scrape_req scrape_req;
 
-/** Function type for a scrape server callback. */
-typedef void scrape_handler(scrape_req *req, void *ctx);
+/** Interface type for implementing a collector that can be scraped. */
+struct collector {
+  const char *name;
+  void (*collect)(scrape_req *req, void *ctx);
+  void *(*init)(int argc, char *argv[]);
+  bool has_args;
+};
 
 /** Sets up a scrape server listening at the given port. */
 scrape_server *scrape_listen(const char *port);
 
-/** Enters a loop serving scrape requests using the provided handler. */
-void scrape_serve(scrape_server *server, scrape_handler *handler, void *handler_ctx);
+/** Enters a loop serving scrape requests of the provided collectors. */
+void scrape_serve(scrape_server *server, unsigned ncoll, const struct collector *coll[], void *coll_ctx[]);
 
 /** Closes the scrape server sockets and frees any resources. */
 void scrape_close(scrape_server *server);

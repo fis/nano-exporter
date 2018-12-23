@@ -110,7 +110,7 @@ scrape_server *scrape_listen(const char *port) {
   return srv;
 }
 
-void scrape_serve(scrape_server *srv, scrape_handler *handler, void *handler_ctx) {
+void scrape_serve(scrape_server *srv, unsigned ncoll, const struct collector *coll[], void *coll_ctx[]) {
   struct scrape_req req;
   req.buf = bbuf_alloc(BUF_INITIAL, BUF_MAX);
 
@@ -137,8 +137,10 @@ void scrape_serve(scrape_server *srv, scrape_handler *handler, void *handler_ctx
         continue;
       }
 
-      if (handle_http(&req))
-        handler(&req, handler_ctx);
+      if (handle_http(&req)) {
+        for (unsigned c = 0; c < ncoll; c++)
+          coll[c]->collect(&req, coll_ctx[c]);
+      }
       close(req.socket);
     }
   }

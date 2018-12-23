@@ -20,7 +20,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "collector.h"
+#include "scrape.h"
 #include "util.h"
 
 #define DEFAULT_DIR "/var/lib/prometheus/node-exporter"

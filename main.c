@@ -25,7 +25,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "collector.h"
 #include "scrape.h"
 #include "util.h"
 
@@ -44,9 +43,8 @@ static const struct collector *collectors[] = {
   XCOLLECTORS
 };
 #undef X
-#define NCOLLECTORS (sizeof collectors / sizeof *collectors)
+#define NCOLLECTORS ((unsigned) (sizeof collectors / sizeof *collectors))
 
-enum tristate { flag_off = -1, flag_undef = 0, flag_on = 1 };
 
 struct config {
   const char *port;
@@ -60,27 +58,20 @@ const struct config default_config = {
   .pidfile = 0,
 };
 
-struct handler_ctx {
-  struct {
-    enum tristate enabled;
-    struct slist *args;
-    struct slist **next_arg;
-    void *ctx;
-  } collectors[NCOLLECTORS];
+struct collector_ctx {
+  unsigned enabled;
+  const struct collector *coll[NCOLLECTORS];
+  void *coll_ctx[NCOLLECTORS];
 };
 
-static bool parse_args(int argc, char *argv[], struct config *cfg, struct handler_ctx *ctx);
-static bool initialize(struct handler_ctx *ctx, int max_args);
+static bool initialize(int argc, char *argv[], struct config *cfg, struct collector_ctx *ctx);
 static bool daemonize(struct config *cfg);
-static void handler(scrape_req *req, void *ctx_ptr);
 
 int main(int argc, char *argv[]) {
   struct config cfg = default_config;
-  struct handler_ctx ctx;
+  struct collector_ctx ctx;
 
-  if (!parse_args(argc, argv, &cfg, &ctx))
-    return 1;
-  if (!initialize(&ctx, argc > 0 ? argc - 1 : 0))
+  if (!initialize(argc, argv, &cfg, &ctx))
     return 1;
 
   scrape_server *server = scrape_listen(cfg.port);
@@ -91,17 +82,24 @@ int main(int argc, char *argv[]) {
     if (!daemonize(&cfg))
       return 1;
 
-  scrape_serve(server, handler, &ctx);
+  scrape_serve(server, ctx.enabled, ctx.coll, ctx.coll_ctx);
   scrape_close(server);
 
   return 0;
 }
 
-static bool parse_args(int argc, char *argv[], struct config *cfg, struct handler_ctx *ctx) {
-  for (size_t i = 0; i < NCOLLECTORS; i++) {
-    ctx->collectors[i].args = 0;
-    ctx->collectors[i].next_arg = &ctx->collectors[i].args;
-    ctx->collectors[i].enabled = flag_undef;
+static bool initialize(int argc, char *argv[], struct config *cfg, struct collector_ctx *ctx) {
+  // parse command-line arguments
+
+  enum tristate { flag_off = -1, flag_undef = 0, flag_on = 1 };
+  enum tristate coll_enabled[NCOLLECTORS];
+  struct { struct slist *args; struct slist **next_arg; unsigned count; } coll_args[NCOLLECTORS];
+
+  for (unsigned i = 0; i < NCOLLECTORS; i++) {
+    coll_enabled[i] = flag_undef;
+    coll_args[i].args = 0;
+    coll_args[i].next_arg = &coll_args[i].args;
+    coll_args[i].count = 0;
   }
 
   enum tristate enabled_default = flag_on;
@@ -109,19 +107,20 @@ static bool parse_args(int argc, char *argv[], struct config *cfg, struct handle
   for (int arg = 1; arg < argc; arg++) {
     // check for collector arguments
 
-    for (size_t i = 0; i < NCOLLECTORS; i++) {
+    for (unsigned i = 0; i < NCOLLECTORS; i++) {
       size_t name_len = strlen(collectors[i]->name);
       if (strncmp(argv[arg], "--", 2) == 0
           && strncmp(argv[arg] + 2, collectors[i]->name, name_len) == 0
           && argv[arg][2 + name_len] == '-') {
         char *carg = argv[arg] + 2 + name_len + 1;
         if (strcmp(carg, "on") == 0) {
-          ctx->collectors[i].enabled = flag_on;
+          coll_enabled[i] = flag_on;
           enabled_default = flag_off;
         } else if (strcmp(carg, "off") == 0) {
-          ctx->collectors[i].enabled = flag_off;
+          coll_enabled[i] = flag_off;
         } else if (collectors[i]->init && collectors[i]->has_args) {
-          ctx->collectors[i].next_arg = slist_append(ctx->collectors[i].next_arg, carg);
+          coll_args[i].next_arg = slist_append(coll_args[i].next_arg, carg);
+          coll_args[i].count++;
         } else {
           fprintf(stderr, "unknown argument: %s (collector %s takes no arguments)\n", argv[arg], collectors[i]->name);
           return false;
@@ -149,30 +148,43 @@ static bool parse_args(int argc, char *argv[], struct config *cfg, struct handle
  next_arg: ;
   }
 
-  for (size_t i = 0; i < NCOLLECTORS; i++)
-    if (ctx->collectors[i].enabled == flag_undef)
-      ctx->collectors[i].enabled = enabled_default;
+  unsigned max_args = 1;
 
-  return true;
-}
+  for (unsigned i = 0; i < NCOLLECTORS; i++) {
+    if (coll_enabled[i] == flag_undef)
+      coll_enabled[i] = enabled_default;
+    if (coll_enabled[i] == flag_on && coll_args[i].count > max_args)
+      max_args = coll_args[i].count;
+  }
 
-static bool initialize(struct handler_ctx *ctx, int max_args) {
-  int argc;
-  char *argv[max_args + 1];
+  // prepare the list of enabled collectors, and initialize them
 
-  for (size_t i = 0; i < NCOLLECTORS; i++) {
-    if (ctx->collectors[i].enabled == flag_on && collectors[i]->init) {
-      argc = 0;
-      for (struct slist *arg = ctx->collectors[i].args; arg && argc < max_args; arg = arg->next)
-        argv[argc++] = arg->data;
-      argv[argc] = 0;
+  unsigned coll_argc;
+  char *coll_argv[max_args + 1];
 
-      ctx->collectors[i].ctx = collectors[i]->init(argc, argv);
+  ctx->enabled = 0;
 
-      if (!ctx->collectors[i].ctx) {
+  for (unsigned i = 0; i < NCOLLECTORS; i++) {
+    if (coll_enabled[i] != flag_on)
+      continue;
+
+    unsigned c = ctx->enabled++;
+    ctx->coll[c] = collectors[i];
+
+    if (collectors[i]->init) {
+      coll_argc = 0;
+      for (struct slist *arg = coll_args[i].args; arg && coll_argc < max_args; arg = arg->next)
+        coll_argv[coll_argc++] = arg->data;
+      coll_argv[coll_argc] = 0;
+
+      ctx->coll_ctx[c] = collectors[i]->init(coll_argc, coll_argv);
+
+      if (!ctx->coll_ctx[c]) {
         fprintf(stderr, "failed to initialize collector %s\n", collectors[i]->name);
         return false;
       }
+    } else {
+      ctx->coll_ctx[c] = 0;
     }
   }
 
@@ -230,13 +242,4 @@ static bool daemonize(struct config *cfg) {
   }
 
   return true;
-}
-
-static void handler(scrape_req *req, void *ctx_ptr) {
-  struct handler_ctx *ctx = ctx_ptr;
-
-  for (size_t c = 0; c < NCOLLECTORS; c++) {
-    if (ctx->collectors[c].enabled == flag_on)
-      collectors[c]->collect(req, ctx->collectors[c].ctx);
-  }
 }

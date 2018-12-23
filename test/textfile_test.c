@@ -16,7 +16,6 @@
 
 #include "harness.h"
 #include "mock_scrape.h"
-#include "../collector.h"
 
 extern const struct collector textfile_collector;
 
